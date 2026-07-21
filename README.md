@@ -163,6 +163,57 @@ Administrators group, and accounts that have never logged on. Read-only.
 Administrators membership is resolved by SID (`S-1-5-32-544`), so it works
 regardless of system language.
 
+### `Rotate-Logs.ps1`
+Rotates log files: compresses logs older than a threshold and deletes archives
+past a retention period. Old archives are pruned before new ones are created.
+
+```powershell
+.\Rotate-Logs.ps1 -Path C:\inetpub\logs -CompressAfterDays 7 -DeleteAfterDays 60
+.\Rotate-Logs.ps1 -Path C:\Logs -Filter *.txt -WhatIf
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-Path` | Root folder with the logs (recursive, required) | — |
+| `-Filter` | Wildcard for log files to rotate | `*.log` |
+| `-CompressAfterDays` | Compress logs older than this | `7` |
+| `-DeleteAfterDays` | Delete `.zip` archives older than this | `90` |
+
+Supports `-WhatIf` / `-Verbose`.
+
+### `Cleanup-TempFiles.ps1`
+Removes old temporary files and reports how much space was reclaimed. **Dry run
+by default** — nothing is deleted unless `-Execute` is given.
+
+```powershell
+.\Cleanup-TempFiles.ps1                      # preview default locations
+.\Cleanup-TempFiles.ps1 -OlderThanDays 3 -Execute
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-Path` | Folders to clean | `%TEMP%`, `Windows\Temp`, INetCache |
+| `-OlderThanDays` | Only remove files older than this | `7` |
+| `-Execute` | Actually delete (otherwise dry run) | off |
+
+Locked/in-use files are skipped safely. Supports `-WhatIf` / `-Confirm`.
+
+### `New-UptimeReport.ps1`
+Runs endpoint health checks and writes a self-contained, colour-coded HTML
+availability report. Reuses `Test-Endpoints.ps1` when present.
+
+```powershell
+.\New-UptimeReport.ps1 -Target "example.com:443","https://example.com"
+.\New-UptimeReport.ps1 -InputFile .\endpoints.txt -OutputPath .\status.html
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-Target` | Endpoint(s); accepts pipeline input | — |
+| `-InputFile` | Text file, one target per line (`#` comments allowed) | — |
+| `-OutputPath` | HTML report path | `.\uptime-report.html` |
+| `-TimeoutSeconds` | Per-request timeout | `10` |
+
 ## Requirements
 
 - Windows PowerShell 5.1+ or PowerShell 7+
@@ -171,6 +222,16 @@ regardless of system language.
   (built in on modern Windows)
 - `Audit-LocalUsers.ps1` reads Administrators membership; run elevated for
   complete results
+
+## Safety notes
+
+Scripts that change or delete data (`backup_retention.ps1`, `Rotate-Logs.ps1`,
+`Cleanup-TempFiles.ps1`, `Test-ServiceHealth.ps1 -AutoRestart`) support
+`-WhatIf`. Preview first:
+
+```powershell
+.\Cleanup-TempFiles.ps1 -WhatIf -Verbose
+```
 
 ## Usage
 
