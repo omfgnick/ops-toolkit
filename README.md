@@ -1,5 +1,7 @@
 # Bash Scripts
 
+**English** · [Português (BR)](README.pt-BR.md)
+
 Small, self-contained Bash utilities for infrastructure and security tasks.
 
 ## Scripts
