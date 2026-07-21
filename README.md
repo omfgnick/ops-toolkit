@@ -109,11 +109,68 @@ Lists local TCP ports with the owning process — Windows counterpart to the Bas
 | `-Port` | Filter to specific local port(s) | all |
 | `-CsvPath` | Optional CSV export path | — |
 
+### `Get-EventLogErrors.ps1`
+Collects Error/Warning events from Windows event logs over a recent window and
+summarises them by source (or returns the individual events with `-Detailed`).
+
+```powershell
+.\Get-EventLogErrors.ps1 -Hours 12
+.\Get-EventLogErrors.ps1 -LogName System -Level Error -Detailed -CsvPath .\errors.csv
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-LogName` | Logs to query | `System, Application` |
+| `-Hours` | Look-back window in hours | `24` |
+| `-Level` | `Error`, `Warning`, or both | both |
+| `-Detailed` | Return individual events instead of a summary | off |
+| `-CsvPath` | Optional CSV export path | — |
+
+### `Get-TLSCertExpiry.ps1`
+Checks the TLS certificate of one or more hosts and reports days until expiry,
+flagging `EXPIRING` / `EXPIRED`.
+
+```powershell
+.\Get-TLSCertExpiry.ps1 -Target github.com,example.com:443
+.\Get-TLSCertExpiry.ps1 -InputFile .\hosts.txt -WarnDays 45 -CsvPath .\certs.csv
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-Target` | Host(s) as `host` or `host:port`; accepts pipeline input | — |
+| `-InputFile` | Text file, one host per line (`#` comments allowed) | — |
+| `-WarnDays` | Flag certs expiring within this many days | `30` |
+| `-TimeoutSeconds` | Connection timeout per host | `10` |
+| `-CsvPath` | Optional CSV export path | — |
+
+Certificate trust is **not** validated — the script only reads the presented
+certificate to inspect its expiry date.
+
+### `Audit-LocalUsers.ps1`
+Audits local user accounts for common hardening findings: enabled accounts whose
+password never expires, accounts with no password required, members of the local
+Administrators group, and accounts that have never logged on. Read-only.
+
+```powershell
+.\Audit-LocalUsers.ps1
+.\Audit-LocalUsers.ps1 -CsvPath .\localusers.csv -Verbose
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-CsvPath` | Optional CSV export path | — |
+
+Administrators membership is resolved by SID (`S-1-5-32-544`), so it works
+regardless of system language.
+
 ## Requirements
 
 - Windows PowerShell 5.1+ or PowerShell 7+
 - `Send-MailMessage` (optional; only for e-mail notifications)
-- CIM/`Get-NetTCPConnection` cmdlets (built in on modern Windows)
+- CIM / `Get-NetTCPConnection` / `Get-WinEvent` / `Get-LocalUser` cmdlets
+  (built in on modern Windows)
+- `Audit-LocalUsers.ps1` reads Administrators membership; run elevated for
+  complete results
 
 ## Usage
 
