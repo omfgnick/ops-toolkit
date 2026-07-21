@@ -42,7 +42,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $log = [System.Collections.Generic.List[string]]::new()
-function Write-Log {
+function Write-BackupLog {
     param([string]$Message)
     $line = "{0} {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Message
     $log.Add($line)
@@ -80,12 +80,12 @@ try {
     $stamp      = Get-Date -Format 'yyyy-MM-dd_HHmmss'
     $backupFile = Join-Path $DestinationPath "backup-$stamp.zip"
 
-    Write-Log "Creating backup of '$SourcePath' -> '$backupFile'..."
+    Write-BackupLog "Creating backup of '$SourcePath' -> '$backupFile'..."
     if ($PSCmdlet.ShouldProcess($backupFile, 'Create backup archive')) {
         Compress-Archive -Path (Join-Path $SourcePath '*') -DestinationPath $backupFile -Force
 
         # Integrity check: the archive must open and enumerate its entries.
-        Write-Log "Verifying archive integrity..."
+        Write-BackupLog "Verifying archive integrity..."
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         $zip = [System.IO.Compression.ZipFile]::OpenRead($backupFile)
         try {
@@ -94,12 +94,12 @@ try {
         finally {
             $zip.Dispose()
         }
-        Write-Log "Backup completed successfully ($entryCount entries): $backupFile"
+        Write-BackupLog "Backup completed successfully ($entryCount entries): $backupFile"
         Send-StatusEmail -Status "Success" -Server $SmtpServer -To $MailTo -From $MailFrom -Body $log
     }
 }
 catch {
-    Write-Log "ERROR: $($_.Exception.Message)"
+    Write-BackupLog "ERROR: $($_.Exception.Message)"
     Send-StatusEmail -Status "Failed" -Server $SmtpServer -To $MailTo -From $MailFrom -Body $log
     throw
 }
