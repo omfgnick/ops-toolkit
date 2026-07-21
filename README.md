@@ -44,10 +44,76 @@ archives that are themselves older than the window are deleted.
 Old archives are pruned **before** new ones are created, so a freshly written
 archive is never deleted in the same run. Supports `-WhatIf` / `-Verbose`.
 
+### `Get-DiskSpaceReport.ps1`
+Reports fixed-disk usage for one or more machines and flags volumes below a
+free-space threshold. Can export to CSV/HTML.
+
+```powershell
+.\Get-DiskSpaceReport.ps1
+.\Get-DiskSpaceReport.ps1 -ComputerName SRV01,SRV02 -ThresholdPercent 10 -HtmlPath .\disk.html
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-ComputerName` | Machines to query | local machine |
+| `-ThresholdPercent` | Free-% at/below which a volume is flagged `LOW` | `15` |
+| `-CsvPath` / `-HtmlPath` | Optional export paths | — |
+
+The local machine is queried without WinRM (local CIM/DCOM session); remote
+machines use WS-Man.
+
+### `Test-ServiceHealth.ps1`
+Checks Windows services and optionally restarts the ones that are not running.
+
+```powershell
+.\Test-ServiceHealth.ps1 -Name Spooler,W32Time
+.\Test-ServiceHealth.ps1 -InputFile .\services.txt -AutoRestart -WhatIf
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-Name` | Service name(s); accepts pipeline input | — |
+| `-InputFile` | Text file, one service per line (`#` comments allowed) | — |
+| `-AutoRestart` | Start any service that is not running | off |
+
+Supports `-WhatIf` / `-Verbose`.
+
+### `Test-Endpoints.ps1`
+Health-checks endpoints — `host:port` (TCP) and `http(s)://` (HTTP) — reporting
+reachability, status and latency.
+
+```powershell
+.\Test-Endpoints.ps1 -Target "example.com:443","https://example.com"
+.\Test-Endpoints.ps1 -InputFile .\endpoints.txt -CsvPath .\health.csv
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-Target` | Endpoint(s); accepts pipeline input | — |
+| `-InputFile` | Text file, one target per line (`#` comments allowed) | — |
+| `-TimeoutSeconds` | Per-request HTTP timeout | `10` |
+| `-CsvPath` | Optional CSV export path | — |
+
+### `Get-OpenPorts.ps1`
+Lists local TCP ports with the owning process — Windows counterpart to the Bash
+`portscan-vuln.sh` (local inspection, not a remote scanner).
+
+```powershell
+.\Get-OpenPorts.ps1
+.\Get-OpenPorts.ps1 -State Established -Port 443,3389 -CsvPath .\ports.csv
+```
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `-State` | TCP state(s): `Listen`, `Established`, `TimeWait`, `CloseWait`, `All` | `Listen` |
+| `-Port` | Filter to specific local port(s) | all |
+| `-CsvPath` | Optional CSV export path | — |
+
 ## Requirements
 
 - Windows PowerShell 5.1+ or PowerShell 7+
 - `Send-MailMessage` (optional; only for e-mail notifications)
+- CIM/`Get-NetTCPConnection` cmdlets (built in on modern Windows)
 
 ## Usage
 
