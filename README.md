@@ -1,5 +1,9 @@
 # PowerShell Scripts
 
+**English** · [Português (BR)](README.pt-BR.md)
+
+[![Lint](https://github.com/omfgnick/Powershell-Scripts/actions/workflows/lint.yml/badge.svg)](https://github.com/omfgnick/Powershell-Scripts/actions/workflows/lint.yml)
+
 Small, self-contained PowerShell utilities for Windows infrastructure tasks.
 
 ## Scripts
@@ -238,4 +242,21 @@ Scripts that change or delete data (`backup_retention.ps1`, `Rotate-Logs.ps1`,
 ```powershell
 # Preview any script safely before running it for real:
 .\backup_retention.ps1 -FolderPath "C:\Logs" -WhatIf -Verbose
+```
+
+## Continuous integration
+
+Every push to `main` and every pull request runs the
+[Lint workflow](.github/workflows/lint.yml):
+
+- **PSScriptAnalyzer** against [`PSScriptAnalyzerSettings.psd1`](PSScriptAnalyzerSettings.psd1).
+  The build fails on any `Error`/`Warning`. `PSAvoidUsingWriteHost` is
+  intentionally disabled (see the settings file for the rationale).
+- **Parse check** — every `.ps1` file is parsed to catch syntax errors.
+
+Run the same checks locally before pushing:
+
+```powershell
+Install-Module PSScriptAnalyzer -Scope CurrentUser
+Invoke-ScriptAnalyzer -Path . -Recurse -Settings .\PSScriptAnalyzerSettings.psd1
 ```

@@ -50,11 +50,19 @@ function Write-Log {
 }
 
 function Send-StatusEmail {
-    param([string]$Status)
-    if (-not $SmtpServer -or -not $MailTo) { return }
+    # Mail settings are passed in explicitly (see call sites) so the function is
+    # self-contained and does not rely on implicit parent-scope capture.
+    param(
+        [string]$Status,
+        [string]$Server,
+        [string]$To,
+        [string]$From,
+        [string[]]$Body
+    )
+    if (-not $Server -or -not $To) { return }
     try {
-        Send-MailMessage -SmtpServer $SmtpServer -To $MailTo -From $MailFrom `
-            -Subject "Backup Status - $Status" -Body ($log -join [Environment]::NewLine)
+        Send-MailMessage -SmtpServer $Server -To $To -From $From `
+            -Subject "Backup Status - $Status" -Body ($Body -join [Environment]::NewLine)
     }
     catch {
         Write-Warning "Failed to send notification e-mail: $($_.Exception.Message)"
@@ -87,11 +95,11 @@ try {
             $zip.Dispose()
         }
         Write-Log "Backup completed successfully ($entryCount entries): $backupFile"
-        Send-StatusEmail -Status "Success"
+        Send-StatusEmail -Status "Success" -Server $SmtpServer -To $MailTo -From $MailFrom -Body $log
     }
 }
 catch {
     Write-Log "ERROR: $($_.Exception.Message)"
-    Send-StatusEmail -Status "Failed"
+    Send-StatusEmail -Status "Failed" -Server $SmtpServer -To $MailTo -From $MailFrom -Body $log
     throw
 }
