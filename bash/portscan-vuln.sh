@@ -23,9 +23,18 @@ PORTS="1-65535"
 while getopts ":p:h" opt; do
   case "$opt" in
     p) PORTS="$OPTARG" ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 shift $((OPTIND - 1))
@@ -36,17 +45,20 @@ if [ -z "$HOST" ]; then
   exit 2
 fi
 
-command -v nmap >/dev/null 2>&1 || { echo "nmap is not installed." >&2; exit 1; }
+command -v nmap >/dev/null 2>&1 || {
+  echo "nmap is not installed." >&2
+  exit 1
+}
 
 rating_for_port() {
   case "$1" in
-    21)  echo "FTP - Vulnerability rating: 8/10" ;;
-    22)  echo "SSH - Vulnerability rating: 6/10" ;;
-    23)  echo "Telnet - Vulnerability rating: 9/10" ;;
-    80)  echo "HTTP - Vulnerability rating: 5/10" ;;
+    21) echo "FTP - Vulnerability rating: 8/10" ;;
+    22) echo "SSH - Vulnerability rating: 6/10" ;;
+    23) echo "Telnet - Vulnerability rating: 9/10" ;;
+    80) echo "HTTP - Vulnerability rating: 5/10" ;;
     443) echo "HTTPS - Vulnerability rating: 4/10" ;;
     3389) echo "RDP - Vulnerability rating: 8/10" ;;
-    *)   echo "Unknown service - Vulnerability rating: 10/10" ;;
+    *) echo "Unknown service - Vulnerability rating: 10/10" ;;
   esac
 }
 
@@ -55,10 +67,10 @@ echo "Scanning $HOST (ports: $PORTS)..."
 # Run nmap ONCE (not once per port), request grepable output, and extract the
 # ports reported as open. This is orders of magnitude faster than looping.
 open_ports="$(
-  nmap -Pn -p "$PORTS" --open -oG - "$HOST" \
-    | awk -F'\t' '/Ports:/{print $2}' \
-    | tr ',' '\n' \
-    | awk -F/ '$2=="open"{gsub(/ /,"",$1); print $1}'
+  nmap -Pn -p "$PORTS" --open -oG - "$HOST" |
+    awk -F'\t' '/Ports:/{print $2}' |
+    tr ',' '\n' |
+    awk -F/ '$2=="open"{gsub(/ /,"",$1); print $1}'
 )"
 
 if [ -z "$open_ports" ]; then
@@ -70,4 +82,4 @@ echo "Open ports:"
 while IFS= read -r port; do
   [ -n "$port" ] || continue
   printf '  %-6s %s\n' "$port" "$(rating_for_port "$port")"
-done <<< "$open_ports"
+done <<<"$open_ports"

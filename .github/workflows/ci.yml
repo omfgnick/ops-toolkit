@@ -76,6 +76,33 @@ jobs:
           }
           if ($failed) { throw "Um ou mais scripts falharam no parse." }
 
+  format:
+    name: Formatação (shfmt)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      # -d mostra o diff e falha se algo estiver fora do padrão.
+      # Para corrigir localmente: shfmt -i 2 -ci -w bash/*.sh
+      - name: shfmt
+        run: |
+          docker run --rm -v "$PWD:/mnt" -w /mnt mvdan/shfmt:v3-alpine -i 2 -ci -d bash/
+
+  secrets:
+    name: Segredos (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # gitleaks varre o histórico, não só o commit atual
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   hygiene:
     name: Higiene — quebras de linha
     runs-on: ubuntu-latest

@@ -47,29 +47,51 @@ while getopts ":f:c:l:p:jh" opt; do
     l) MAX_MS="$OPTARG" ;;
     p) PORTS="$OPTARG" ;;
     j) AS_JSON=1 ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 shift $((OPTIND - 1))
 
-command -v ping >/dev/null 2>&1 || { echo "ping not found." >&2; exit 2; }
+command -v ping >/dev/null 2>&1 || {
+  echo "ping not found." >&2
+  exit 2
+}
 for v in "$COUNT" "$MAX_MS"; do
-  case "$v" in ''|*[!0-9]*) echo "-c and -l must be integers." >&2; exit 2 ;; esac
+  case "$v" in '' | *[!0-9]*)
+    echo "-c and -l must be integers." >&2
+    exit 2
+    ;;
+  esac
 done
 
 hosts=("$@")
 if [ -n "$INPUT_FILE" ]; then
-  [ -r "$INPUT_FILE" ] || { echo "Cannot read file: $INPUT_FILE" >&2; exit 2; }
+  [ -r "$INPUT_FILE" ] || {
+    echo "Cannot read file: $INPUT_FILE" >&2
+    exit 2
+  }
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(echo "$line" | tr -d '[:space:]')"
     [ -n "$line" ] && hosts+=("$line")
-  done < "$INPUT_FILE"
+  done <"$INPUT_FILE"
 fi
 
-[ ${#hosts[@]} -gt 0 ] || { echo "No host given. Use -h for help." >&2; exit 2; }
+[ ${#hosts[@]} -gt 0 ] || {
+  echo "No host given. Use -h for help." >&2
+  exit 2
+}
 
 json_escape() {
   printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'
@@ -108,7 +130,7 @@ for host in "${hosts[@]}"; do
   rows+=("$host|$loss|$avg|$status")
 
   if [ -n "$PORTS" ]; then
-    IFS=',' read -ra plist <<< "$PORTS"
+    IFS=',' read -ra plist <<<"$PORTS"
     for p in "${plist[@]}"; do
       p="$(echo "$p" | tr -d '[:space:]')"
       [ -n "$p" ] || continue
@@ -126,7 +148,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   printf '{"pings":%d,"latency_threshold_ms":%d,"problems":%d,"hosts":[' "$COUNT" "$MAX_MS" "$problems"
   first=1
   for row in "${rows[@]}"; do
-    IFS='|' read -r host loss avg status <<< "$row"
+    IFS='|' read -r host loss avg status <<<"$row"
     [ $first -eq 0 ] && printf ','
     first=0
     if [ "$avg" = "-" ]; then avg_json=null; else avg_json="$avg"; fi
@@ -136,7 +158,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   printf '],"ports":['
   first=1
   for row in ${port_rows+"${port_rows[@]}"}; do
-    IFS='|' read -r host port state <<< "$row"
+    IFS='|' read -r host port state <<<"$row"
     [ $first -eq 0 ] && printf ','
     first=0
     printf '{"host":"%s","port":%s,"state":"%s"}' "$(json_escape "$host")" "$port" "$state"
@@ -145,14 +167,14 @@ if [ "$AS_JSON" -eq 1 ]; then
 else
   printf '%-34s %6s %10s  %s\n' "HOST" "LOSS" "AVG" "STATUS"
   for row in "${rows[@]}"; do
-    IFS='|' read -r host loss avg status <<< "$row"
+    IFS='|' read -r host loss avg status <<<"$row"
     printf '%-34s %5s%% %8sms  %s\n' "$host" "$loss" "$avg" "$status"
   done
   if [ ${#port_rows[@]} -gt 0 ]; then
     echo
     printf '%-34s %6s  %s\n' "HOST" "PORT" "STATE"
     for row in "${port_rows[@]}"; do
-      IFS='|' read -r host port state <<< "$row"
+      IFS='|' read -r host port state <<<"$row"
       printf '%-34s %6s  %s\n' "$host" "$port" "$state"
     done
   fi
