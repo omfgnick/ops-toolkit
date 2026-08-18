@@ -41,27 +41,49 @@ while getopts ":f:t:c:jh" opt; do
     t) TIMEOUT="$OPTARG" ;;
     c) EXPECT_CODE="$OPTARG" ;;
     j) AS_JSON=1 ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 shift $((OPTIND - 1))
 
-command -v curl >/dev/null 2>&1 || { echo "curl not found." >&2; exit 2; }
-case "$TIMEOUT" in ''|*[!0-9]*) echo "Timeout must be an integer." >&2; exit 2 ;; esac
+command -v curl >/dev/null 2>&1 || {
+  echo "curl not found." >&2
+  exit 2
+}
+case "$TIMEOUT" in '' | *[!0-9]*)
+  echo "Timeout must be an integer." >&2
+  exit 2
+  ;;
+esac
 
 targets=("$@")
 if [ -n "$INPUT_FILE" ]; then
-  [ -r "$INPUT_FILE" ] || { echo "Cannot read file: $INPUT_FILE" >&2; exit 2; }
+  [ -r "$INPUT_FILE" ] || {
+    echo "Cannot read file: $INPUT_FILE" >&2
+    exit 2
+  }
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(echo "$line" | tr -d '[:space:]')"
     [ -n "$line" ] && targets+=("$line")
-  done < "$INPUT_FILE"
+  done <"$INPUT_FILE"
 fi
 
-[ ${#targets[@]} -gt 0 ] || { echo "No endpoint given. Use -h for help." >&2; exit 2; }
+[ ${#targets[@]} -gt 0 ] || {
+  echo "No endpoint given. Use -h for help." >&2
+  exit 2
+}
 
 json_escape() {
   printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'
@@ -72,7 +94,7 @@ rows=()
 
 for url in "${targets[@]}"; do
   # A URL without scheme is assumed to be https
-  case "$url" in http://*|https://*) ;; *) url="https://$url" ;; esac
+  case "$url" in http://* | https://*) ;; *) url="https://$url" ;; esac
 
   if out="$(curl -sS -o /dev/null -m "$TIMEOUT" -w '%{http_code} %{time_total}' "$url" 2>/dev/null)"; then
     code="${out%% *}"
@@ -81,10 +103,12 @@ for url in "${targets[@]}"; do
     if [ -n "$EXPECT_CODE" ]; then
       [ "$code" = "$EXPECT_CODE" ] && status="ok" || status="unexpected-code"
     else
-      case "$code" in 2??|3??) status="ok" ;; *) status="bad-status" ;; esac
+      case "$code" in 2?? | 3??) status="ok" ;; *) status="bad-status" ;; esac
     fi
   else
-    code="000"; ms="0"; status="unreachable"
+    code="000"
+    ms="0"
+    status="unreachable"
   fi
 
   [ "$status" = "ok" ] || failures=$((failures + 1))
@@ -95,7 +119,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   printf '{"checked":%d,"failed":%d,"endpoints":[' "${#targets[@]}" "$failures"
   first=1
   for row in "${rows[@]}"; do
-    IFS='|' read -r url code ms status <<< "$row"
+    IFS='|' read -r url code ms status <<<"$row"
     [ $first -eq 0 ] && printf ','
     first=0
     printf '{"url":"%s","status_code":%s,"latency_ms":%s,"status":"%s"}' \
@@ -105,7 +129,7 @@ if [ "$AS_JSON" -eq 1 ]; then
 else
   printf '%-52s %6s %10s  %s\n' "ENDPOINT" "CODE" "LATENCY" "STATUS"
   for row in "${rows[@]}"; do
-    IFS='|' read -r url code ms status <<< "$row"
+    IFS='|' read -r url code ms status <<<"$row"
     printf '%-52s %6s %8sms  %s\n' "$url" "$code" "$ms" "$status"
   done
   echo

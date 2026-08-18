@@ -1,0 +1,32 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Segunda de manhã: pega regra nova publicada depois do último commit
+    - cron: '17 9 * * 1'
+
+jobs:
+  analyze:
+    name: Análise
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # 'actions' cobre os workflows deste repo. Shell e PowerShell não têm
+      # suporte no CodeQL — quem cobre esses é o ShellCheck/PSScriptAnalyzer.
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: actions
+
+      - name: Analisar
+        uses: github/codeql-action/analyze@v3

@@ -20,7 +20,7 @@ usage() {
 # ---- Defaults / configuration ------------------------------------------------
 SRC_DIR="${SRC_DIR:-/path/to/source/directory}"
 DST_DIR="${DST_DIR:-/path/to/destination/directory}"
-EMAIL_RECIPIENT="${EMAIL_RECIPIENT:-}"          # empty => notification disabled
+EMAIL_RECIPIENT="${EMAIL_RECIPIENT:-}" # empty => notification disabled
 EMAIL_SUBJECT="Backup Status"
 
 # ---- Parse arguments ---------------------------------------------------------
@@ -29,9 +29,18 @@ while getopts ":s:d:e:h" opt; do
     s) SRC_DIR="$OPTARG" ;;
     d) DST_DIR="$OPTARG" ;;
     e) EMAIL_RECIPIENT="$OPTARG" ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 
@@ -51,7 +60,10 @@ send_email() {
   [ -n "$EMAIL_RECIPIENT" ] || return 0
   local sendmail_bin
   sendmail_bin="$(command -v sendmail || echo /usr/sbin/sendmail)"
-  [ -x "$sendmail_bin" ] || { log "sendmail not found; skipping e-mail."; return 0; }
+  [ -x "$sendmail_bin" ] || {
+    log "sendmail not found; skipping e-mail."
+    return 0
+  }
 
   {
     echo "To: $EMAIL_RECIPIENT"
@@ -66,7 +78,11 @@ send_email() {
 }
 
 # Report a failure, notify, and exit.
-fail() { log "ERROR: $*"; send_email "Failed"; exit 1; }
+fail() {
+  log "ERROR: $*"
+  send_email "Failed"
+  exit 1
+}
 
 # ---- Pre-flight checks -------------------------------------------------------
 [ -d "$SRC_DIR" ] || fail "Source directory does not exist: $SRC_DIR"
@@ -76,8 +92,8 @@ mkdir -p "$DST_DIR" || fail "Cannot create destination directory: $DST_DIR"
 BACKUP_FILE="$DST_DIR/backup-$(date +'%Y-%m-%d_%H%M%S').tar.gz"
 log "Creating backup of '$SRC_DIR' -> '$BACKUP_FILE'..."
 # -C so the archive stores paths relative to the source parent, not absolute.
-tar -czf "$BACKUP_FILE" -C "$(dirname "$SRC_DIR")" "$(basename "$SRC_DIR")" \
-  || fail "tar failed while creating the backup."
+tar -czf "$BACKUP_FILE" -C "$(dirname "$SRC_DIR")" "$(basename "$SRC_DIR")" ||
+  fail "tar failed while creating the backup."
 
 # ---- Verify integrity --------------------------------------------------------
 # The correct check is that the produced archive is itself valid and readable,

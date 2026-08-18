@@ -48,16 +48,35 @@ while getopts ":d:p:a:k:fjh" opt; do
     k) KEEP_DAYS="$OPTARG" ;;
     f) APPLY=1 ;;
     j) AS_JSON=1 ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 
-[ -n "$DIR" ] || { echo "Option -d (directory) is required. Use -h for help." >&2; exit 2; }
-[ -d "$DIR" ] || { echo "Directory does not exist: $DIR" >&2; exit 2; }
+[ -n "$DIR" ] || {
+  echo "Option -d (directory) is required. Use -h for help." >&2
+  exit 2
+}
+[ -d "$DIR" ] || {
+  echo "Directory does not exist: $DIR" >&2
+  exit 2
+}
 for v in "$AGE_DAYS" "$KEEP_DAYS"; do
-  case "$v" in ''|*[!0-9]*) echo "Day counts must be integers." >&2; exit 2 ;; esac
+  case "$v" in '' | *[!0-9]*)
+    echo "Day counts must be integers." >&2
+    exit 2
+    ;;
+  esac
 done
 
 json_escape() {
@@ -107,7 +126,7 @@ if [ "$AS_JSON" -eq 1 ]; then
     "$compressed" "$deleted" "$failed"
   first=1
   for a in "${actions[@]}"; do
-    IFS='|' read -r kind path result <<< "$a"
+    IFS='|' read -r kind path result <<<"$a"
     [ $first -eq 0 ] && printf ','
     first=0
     printf '{"action":"%s","path":"%s","result":"%s"}' \
@@ -124,7 +143,7 @@ else
   else
     printf '%-10s %-10s %s\n' "ACTION" "RESULT" "PATH"
     for a in "${actions[@]}"; do
-      IFS='|' read -r kind path result <<< "$a"
+      IFS='|' read -r kind path result <<<"$a"
       printf '%-10s %-10s %s\n' "$kind" "$result" "$path"
     done
   fi

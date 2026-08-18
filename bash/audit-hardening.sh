@@ -38,9 +38,18 @@ while getopts ":d:jh" opt; do
   case "$opt" in
     d) SCAN_DIRS+=("$OPTARG") ;;
     j) AS_JSON=1 ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 
@@ -51,7 +60,7 @@ json_escape() {
 }
 
 findings=()
-add_finding() { findings+=("$1|$2"); }   # severity|message
+add_finding() { findings+=("$1|$2"); } # severity|message
 
 IS_ROOT=0
 [ "$(id -u)" -eq 0 ] && IS_ROOT=1
@@ -70,13 +79,13 @@ while IFS= read -r line; do
   if [ "$uid" = "0" ] && [ "$user" != "root" ]; then
     add_finding "high" "account '$user' has UID 0 (root-equivalent)"
   fi
-done <<< "$login_users"
+done <<<"$login_users"
 
 # Empty passwords
 if [ "$IS_ROOT" -eq 1 ] && [ -r /etc/shadow ]; then
   while IFS=: read -r user hash _; do
     [ -z "${hash:-}" ] && add_finding "high" "account '$user' has an empty password"
-  done < /etc/shadow
+  done </etc/shadow
 else
   add_finding "info" "empty-password check skipped (needs root)"
 fi

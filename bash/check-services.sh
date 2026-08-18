@@ -41,23 +41,38 @@ while getopts ":f:rnjh" opt; do
     r) RESTART=1 ;;
     n) DRY_RUN=1 ;;
     j) AS_JSON=1 ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 shift $((OPTIND - 1))
 
-command -v systemctl >/dev/null 2>&1 || { echo "systemctl not found; this script needs systemd." >&2; exit 2; }
+command -v systemctl >/dev/null 2>&1 || {
+  echo "systemctl not found; this script needs systemd." >&2
+  exit 2
+}
 
 services=("$@")
 if [ -n "$INPUT_FILE" ]; then
-  [ -r "$INPUT_FILE" ] || { echo "Cannot read file: $INPUT_FILE" >&2; exit 2; }
+  [ -r "$INPUT_FILE" ] || {
+    echo "Cannot read file: $INPUT_FILE" >&2
+    exit 2
+  }
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(echo "$line" | tr -d '[:space:]')"
     [ -n "$line" ] && services+=("$line")
-  done < "$INPUT_FILE"
+  done <"$INPUT_FILE"
 fi
 
 if [ ${#services[@]} -eq 0 ]; then
@@ -100,7 +115,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   printf '{"checked":%d,"down":%d,"services":[' "${#services[@]}" "$failures"
   first=1
   for row in "${rows[@]}"; do
-    IFS='|' read -r name state action <<< "$row"
+    IFS='|' read -r name state action <<<"$row"
     [ $first -eq 0 ] && printf ','
     first=0
     printf '{"name":"%s","state":"%s","action":"%s"}' \
@@ -110,7 +125,7 @@ if [ "$AS_JSON" -eq 1 ]; then
 else
   printf '%-28s %-12s %s\n' "SERVICE" "STATE" "ACTION"
   for row in "${rows[@]}"; do
-    IFS='|' read -r name state action <<< "$row"
+    IFS='|' read -r name state action <<<"$row"
     printf '%-28s %-12s %s\n' "$name" "$state" "$action"
   done
   echo

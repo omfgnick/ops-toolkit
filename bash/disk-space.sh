@@ -36,14 +36,26 @@ while getopts ":t:jah" opt; do
     t) THRESHOLD="$OPTARG" ;;
     j) AS_JSON=1 ;;
     a) ALL_FS=1 ;;
-    h) usage; exit 0 ;;
-    :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-    \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
+    h)
+      usage
+      exit 0
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 2
+      ;;
+    \?)
+      echo "Unknown option: -$OPTARG" >&2
+      exit 2
+      ;;
   esac
 done
 
 case "$THRESHOLD" in
-  ''|*[!0-9]*) echo "Threshold must be an integer: $THRESHOLD" >&2; exit 2 ;;
+  '' | *[!0-9]*)
+    echo "Threshold must be an integer: $THRESHOLD" >&2
+    exit 2
+    ;;
 esac
 if [ "$THRESHOLD" -lt 0 ] || [ "$THRESHOLD" -gt 100 ]; then
   echo "Threshold must be 0-100." >&2
@@ -76,10 +88,14 @@ done < <(df "${df_args[@]}" 2>/dev/null)
 # KiB -> human readable, without depending on df -h
 human() {
   local kb=$1
-  if   [ "$kb" -ge 1073741824 ]; then awk -v k="$kb" 'BEGIN { printf "%.1fT", k/1073741824 }'
-  elif [ "$kb" -ge 1048576 ];    then awk -v k="$kb" 'BEGIN { printf "%.1fG", k/1048576 }'
-  elif [ "$kb" -ge 1024 ];       then awk -v k="$kb" 'BEGIN { printf "%.1fM", k/1024 }'
-  else printf '%dK' "$kb"
+  if [ "$kb" -ge 1073741824 ]; then
+    awk -v k="$kb" 'BEGIN { printf "%.1fT", k/1073741824 }'
+  elif [ "$kb" -ge 1048576 ]; then
+    awk -v k="$kb" 'BEGIN { printf "%.1fG", k/1048576 }'
+  elif [ "$kb" -ge 1024 ]; then
+    awk -v k="$kb" 'BEGIN { printf "%.1fM", k/1024 }'
+  else
+    printf '%dK' "$kb"
   fi
 }
 
@@ -87,7 +103,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   printf '{"threshold_percent":%d,"low_count":%d,"filesystems":[' "$THRESHOLD" "$low"
   first=1
   for row in "${rows[@]}"; do
-    IFS='|' read -r source mount size used avail free_pct flag <<< "$row"
+    IFS='|' read -r source mount size used avail free_pct flag <<<"$row"
     [ $first -eq 0 ] && printf ','
     first=0
     printf '{"filesystem":"%s","mount":"%s","size_kb":%s,"used_kb":%s,"available_kb":%s,"free_percent":%s,"low":%s}' \
@@ -98,7 +114,7 @@ if [ "$AS_JSON" -eq 1 ]; then
 else
   printf '%-24s %-20s %8s %8s %8s %6s  %s\n' "FILESYSTEM" "MOUNT" "SIZE" "USED" "AVAIL" "FREE%" "STATUS"
   for row in "${rows[@]}"; do
-    IFS='|' read -r source mount size used avail free_pct flag <<< "$row"
+    IFS='|' read -r source mount size used avail free_pct flag <<<"$row"
     status="ok"
     [ "$flag" -eq 1 ] && status="LOW"
     printf '%-24s %-20s %8s %8s %8s %5s%%  %s\n' \
