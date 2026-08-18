@@ -45,7 +45,10 @@ done
 case "$THRESHOLD" in
   ''|*[!0-9]*) echo "Threshold must be an integer: $THRESHOLD" >&2; exit 2 ;;
 esac
-[ "$THRESHOLD" -ge 0 ] && [ "$THRESHOLD" -le 100 ] || { echo "Threshold must be 0-100." >&2; exit 2; }
+if [ "$THRESHOLD" -lt 0 ] || [ "$THRESHOLD" -gt 100 ]; then
+  echo "Threshold must be 0-100." >&2
+  exit 2
+fi
 
 json_escape() {
   printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'

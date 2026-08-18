@@ -18,12 +18,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: ShellCheck
+      # Versão fixa: o shellcheck do apt é mais antigo que o usado localmente e
+      # as duas discordavam sobre alguns apontamentos (SC2015, por exemplo).
+      - name: ShellCheck ${{ env.SHELLCHECK_VERSION }}
+        env:
+          SHELLCHECK_VERSION: v0.11.0
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
-          shellcheck --version
+          curl -sSL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
+            | tar -xJv --strip-components=1 "shellcheck-${SHELLCHECK_VERSION}/shellcheck"
+          ./shellcheck --version
           # -S style: falha em qualquer apontamento, inclusive de estilo
-          find bash -name '*.sh' -print0 | xargs -0 shellcheck -S style
+          find bash -name '*.sh' -print0 | xargs -0 ./shellcheck -S style
 
       - name: Sintaxe (bash -n)
         run: |
