@@ -1,0 +1,3 @@
+# Scripts shell precisam de LF, senão quebram em Linux/macOS.
+*.sh text eol=lf
+*.md text eol=lf
