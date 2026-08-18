@@ -24,8 +24,12 @@ jobs:
         env:
           SHELLCHECK_VERSION: v0.11.0
         run: |
-          curl -sSL "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
-            | tar -xJv --strip-components=1 "shellcheck-${SHELLCHECK_VERSION}/shellcheck"
+          # Baixa em arquivo (não em pipe) e com retry: o download já falhou uma
+          # vez com 'connection reset', e num pipe o erro só aparece como tar
+          # corrompido, mascarando a causa real.
+          url="https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          curl -sSL --retry 5 --retry-delay 3 --retry-all-errors -o shellcheck.tar.xz "$url"
+          tar -xJf shellcheck.tar.xz --strip-components=1 "shellcheck-${SHELLCHECK_VERSION}/shellcheck"
           ./shellcheck --version
           # -S style: falha em qualquer apontamento, inclusive de estilo
           find bash -name '*.sh' -print0 | xargs -0 ./shellcheck -S style
