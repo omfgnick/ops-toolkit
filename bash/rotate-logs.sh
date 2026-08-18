@@ -127,7 +127,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   first=1
   for a in "${actions[@]}"; do
     IFS='|' read -r kind path result <<<"$a"
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     printf '{"action":"%s","path":"%s","result":"%s"}' \
       "$kind" "$(json_escape "$path")" "$result"

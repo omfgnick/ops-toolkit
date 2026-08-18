@@ -63,7 +63,7 @@ findings=()
 add_finding() { findings+=("$1|$2"); } # severity|message
 
 IS_ROOT=0
-[ "$(id -u)" -eq 0 ] && IS_ROOT=1
+if [ "$(id -u)" -eq 0 ]; then IS_ROOT=1; fi
 
 # ---- Accounts ----------------------------------------------------------------
 login_users=""
@@ -73,7 +73,7 @@ fi
 
 # UID 0 accounts other than root are a classic backdoor
 while IFS= read -r line; do
-  [ -z "$line" ] && continue
+  if [ -z "$line" ]; then continue; fi
   user="${line%%:*}"
   uid="$(printf '%s' "$line" | cut -d: -f2)"
   if [ "$uid" = "0" ] && [ "$user" != "root" ]; then
@@ -84,7 +84,7 @@ done <<<"$login_users"
 # Empty passwords
 if [ "$IS_ROOT" -eq 1 ] && [ -r /etc/shadow ]; then
   while IFS=: read -r user hash _; do
-    [ -z "${hash:-}" ] && add_finding "high" "account '$user' has an empty password"
+    if [ -z "${hash:-}" ]; then add_finding "high" "account '$user' has an empty password"; fi
   done </etc/shadow
 else
   add_finding "info" "empty-password check skipped (needs root)"
@@ -100,16 +100,22 @@ else
 fi
 
 # ---- SSH ---------------------------------------------------------------------
-SSHD_CONFIG=/etc/ssh/sshd_config
+# Sobrescrevível para permitir teste com um arquivo de exemplo
+SSHD_CONFIG="${SSHD_CONFIG:-/etc/ssh/sshd_config}"
 if [ -r "$SSHD_CONFIG" ]; then
   # The effective value is the FIRST occurrence; commented lines do not count
   sshd_value() {
-    grep -Ei "^[[:space:]]*$1[[:space:]]+" "$SSHD_CONFIG" 2>/dev/null | head -1 | awk '{ print tolower($2) }'
+    # grep sem correspondência retorna 1 e, com 'pipefail', derrubaria o script
+    grep -Ei "^[[:space:]]*$1[[:space:]]+" "$SSHD_CONFIG" 2>/dev/null | head -1 | awk '{ print tolower($2) }' || true
   }
   permit_root="$(sshd_value PermitRootLogin)"
   pass_auth="$(sshd_value PasswordAuthentication)"
-  [ "$permit_root" = "yes" ] && add_finding "high" "sshd allows direct root login (PermitRootLogin yes)"
-  [ "$pass_auth" = "yes" ] && add_finding "medium" "sshd allows password authentication"
+  if [ "$permit_root" = "yes" ]; then
+    add_finding "high" "sshd allows direct root login (PermitRootLogin yes)"
+  fi
+  if [ "$pass_auth" = "yes" ]; then
+    add_finding "medium" "sshd allows password authentication"
+  fi
 else
   add_finding "info" "sshd_config not readable (needs root, or SSH not installed)"
 fi
@@ -124,15 +130,17 @@ for dir in "${SCAN_DIRS[@]}"; do
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     ww_count=$((ww_count + 1))
-    [ "$ww_count" -le 5 ] && ww_examples="${ww_examples}${f}"$'\n'
+    if [ "$ww_count" -le 5 ]; then ww_examples="${ww_examples}${f}"$'\n'; fi
   done < <(find "$dir" -xdev -type f -perm -0002 2>/dev/null | head -50)
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     suid_count=$((suid_count + 1))
-    [ "$suid_count" -le 5 ] && suid_examples="${suid_examples}${f}"$'\n'
+    if [ "$suid_count" -le 5 ]; then suid_examples="${suid_examples}${f}"$'\n'; fi
   done < <(find "$dir" -xdev -type f -perm -4000 2>/dev/null | head -50)
 done
-[ "$ww_count" -gt 0 ] && add_finding "medium" "$ww_count world-writable file(s) found"
+if [ "$ww_count" -gt 0 ]; then
+  add_finding "medium" "$ww_count world-writable file(s) found"
+fi
 
 # ---- Listening sockets -------------------------------------------------------
 listening=""
@@ -140,14 +148,14 @@ if command -v ss >/dev/null 2>&1; then
   listening="$(ss -tlnH 2>/dev/null | awk '{ print $4 }' | sort -u || true)"
   # Anything bound to 0.0.0.0 / [::] is reachable from outside the host
   ext="$(printf '%s\n' "$listening" | grep -cE '^(0\.0\.0\.0|\[::\])' || true)"
-  [ "${ext:-0}" -gt 0 ] && add_finding "info" "$ext socket(s) listening on all interfaces"
+  if [ "${ext:-0}" -gt 0 ]; then add_finding "info" "$ext socket(s) listening on all interfaces"; fi
 fi
 
 # ---- Render ------------------------------------------------------------------
 count_sev() {
   local sev=$1 n=0
   for f in ${findings+"${findings[@]}"}; do
-    [ "${f%%|*}" = "$sev" ] && n=$((n + 1))
+    if [ "${f%%|*}" = "$sev" ]; then n=$((n + 1)); fi
   done
   printf '%d' "$n"
 }
@@ -158,7 +166,7 @@ if [ "$AS_JSON" -eq 1 ]; then
     "$([ "$IS_ROOT" -eq 1 ] && echo true || echo false)" "$suid_count" "$ww_count"
   first=1
   for f in ${findings+"${findings[@]}"}; do
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     printf '{"severity":"%s","message":"%s"}' "${f%%|*}" "$(json_escape "${f#*|}")"
   done
@@ -168,7 +176,7 @@ else
   echo "==============================================================="
   echo " HARDENING AUDIT — $(hostname 2>/dev/null || echo unknown)"
   echo " $(date '+%Y-%m-%d %H:%M:%S %Z')"
-  [ "$IS_ROOT" -eq 0 ] && echo " (running unprivileged — some checks were skipped)"
+  if [ "$IS_ROOT" -eq 0 ]; then echo " (running unprivileged — some checks were skipped)"; fi
   echo "==============================================================="
   echo
   echo "-- Login-capable accounts --------------------------------------"
@@ -176,9 +184,9 @@ else
   echo
   echo "-- File modes --------------------------------------------------"
   printf '  World-writable : %d\n' "$ww_count"
-  [ -n "$ww_examples" ] && printf '%s' "$ww_examples" | sed 's/^/      /'
+  if [ -n "$ww_examples" ]; then printf '%s' "$ww_examples" | sed 's/^/      /'; fi
   printf '  SUID binaries  : %d\n' "$suid_count"
-  [ -n "$suid_examples" ] && printf '%s' "$suid_examples" | sed 's/^/      /'
+  if [ -n "$suid_examples" ]; then printf '%s' "$suid_examples" | sed 's/^/      /'; fi
   echo
   echo "-- Listening sockets -------------------------------------------"
   if [ -n "$listening" ]; then printf '%s\n' "$listening" | sed 's/^/  /'; else echo "  (ss unavailable)"; fi

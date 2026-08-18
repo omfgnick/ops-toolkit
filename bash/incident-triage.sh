@@ -89,13 +89,13 @@ if [ -r /proc/meminfo ]; then
   MEM_AVAIL="$(awk '/^MemAvailable:/ { print $2 }' /proc/meminfo)"
 fi
 MEM_USED_PCT=0
-[ "$MEM_TOTAL" -gt 0 ] && MEM_USED_PCT=$(((MEM_TOTAL - MEM_AVAIL) * 100 / MEM_TOTAL))
+if [ "$MEM_TOTAL" -gt 0 ]; then MEM_USED_PCT=$(((MEM_TOTAL - MEM_AVAIL) * 100 / MEM_TOTAL)); fi
 
 # Fullest filesystem
 DISK_WORST_PCT=0
 DISK_WORST_MOUNT="-"
 while read -r _ _ _ _ capacity mount; do
-  [ "$capacity" = "Capacity" ] && continue
+  if [ "$capacity" = "Capacity" ]; then continue; fi
   pct="${capacity%\%}"
   case "$pct" in '' | *[!0-9]*) continue ;; esac
   if [ "$pct" -gt "$DISK_WORST_PCT" ]; then
@@ -124,9 +124,9 @@ fi
 # ---- Alerts ------------------------------------------------------------------
 alerts=()
 awk -v r="$LOAD_RATIO" 'BEGIN { exit !(r > 1.0) }' && alerts+=("load per core is ${LOAD_RATIO} (>1.00)")
-[ "$MEM_USED_PCT" -ge 90 ] && alerts+=("memory at ${MEM_USED_PCT}%")
-[ "$DISK_WORST_PCT" -ge 85 ] && alerts+=("filesystem ${DISK_WORST_MOUNT} at ${DISK_WORST_PCT}%")
-[ "$FAILED_COUNT" -gt 0 ] && alerts+=("${FAILED_COUNT} failed systemd unit(s)")
+if [ "$MEM_USED_PCT" -ge 90 ]; then alerts+=("memory at ${MEM_USED_PCT}%"); fi
+if [ "$DISK_WORST_PCT" -ge 85 ]; then alerts+=("filesystem ${DISK_WORST_MOUNT} at ${DISK_WORST_PCT}%"); fi
+if [ "$FAILED_COUNT" -gt 0 ]; then alerts+=("${FAILED_COUNT} failed systemd unit(s)"); fi
 
 # ---- Render ------------------------------------------------------------------
 render_text() {
@@ -173,8 +173,8 @@ render_json() {
   local first=1
   if [ -n "$FAILED_UNITS" ]; then
     while IFS= read -r u; do
-      [ -z "$u" ] && continue
-      [ $first -eq 0 ] && printf ','
+      if [ -z "$u" ]; then continue; fi
+      if [ $first -eq 0 ]; then printf ','; fi
       first=0
       printf '"%s"' "$(json_escape "$u")"
     done <<<"$FAILED_UNITS"
@@ -182,7 +182,7 @@ render_json() {
   printf '],"alerts":['
   first=1
   for a in ${alerts+"${alerts[@]}"}; do
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     printf '"%s"' "$(json_escape "$a")"
   done
@@ -191,7 +191,7 @@ render_json() {
 
 if [ "$AS_JSON" -eq 1 ]; then output="$(render_json)"; else output="$(render_text)"; fi
 printf '%s\n' "$output"
-[ -n "$OUT_FILE" ] && printf '%s\n' "$output" >"$OUT_FILE"
+if [ -n "$OUT_FILE" ]; then printf '%s\n' "$output" >"$OUT_FILE"; fi
 
 [ ${#alerts[@]} -eq 0 ] || exit 1
 exit 0
