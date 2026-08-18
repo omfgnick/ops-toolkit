@@ -63,6 +63,14 @@ Full reference: [docs/powershell.en.md](docs/powershell.en.md)
 |---|---|
 | `backup-folder.sh` | Compressed backup with integrity check and optional e-mail |
 | `portscan-vuln.sh` | nmap scan with a simple per-port risk rating |
+| `check-services.sh` | systemd service health, optionally restarting what is down |
+| `disk-space.sh` | Free space per filesystem, flags anything below a threshold |
+| `rotate-logs.sh` | Compresses old logs and drops archives past retention (dry run by default) |
+| `check-endpoints.sh` | HTTP(S) reachability, status code and latency |
+| `check-tls-expiry.sh` | Days remaining on TLS certificates |
+| `incident-triage.sh` | One-shot machine snapshot for the start of a ticket |
+| `net-monitor.sh` | Ping loss/latency and TCP port checks for link monitoring |
+| `audit-hardening.sh` | Read-only security review: accounts, sudo, SSH, file modes |
 
 Full reference: [docs/bash.en.md](docs/bash.en.md)
 
