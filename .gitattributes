@@ -1,0 +1,7 @@
+# Scripts shell precisam de LF, senão quebram em Linux/macOS ("bad interpreter").
+*.sh   text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+# PowerShell roda no Windows; CRLF é o padrão esperado ali.
+*.ps1  text eol=crlf
+*.psd1 text eol=crlf

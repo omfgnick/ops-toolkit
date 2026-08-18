@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bash:
+    name: Bash — shellcheck + sintaxe
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          shellcheck --version
+          # -S style: falha em qualquer apontamento, inclusive de estilo
+          find bash -name '*.sh' -print0 | xargs -0 shellcheck -S style
+
+      - name: Sintaxe (bash -n)
+        run: |
+          fail=0
+          for f in $(find bash -name '*.sh'); do
+            if bash -n "$f"; then echo "OK  $f"; else echo "::error file=$f::erro de sintaxe"; fail=1; fi
+          done
+          exit $fail
+
+  powershell:
+    name: PowerShell — PSScriptAnalyzer + parse
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+
+      - name: PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $settings = Join-Path $PWD 'PSScriptAnalyzerSettings.psd1'
+          $results = Invoke-ScriptAnalyzer -Path ./powershell -Recurse -Settings $settings
+          if ($results) { $results | Format-Table -AutoSize RuleName, Severity, ScriptName, Line, Message }
+          $blocking = @($results | Where-Object { $_.Severity -in 'Error', 'Warning' })
+          Write-Host "Apontamentos: Error/Warning = $($blocking.Count), total = $(@($results).Count)"
+          if ($blocking.Count -gt 0) { throw "PSScriptAnalyzer reportou $($blocking.Count) apontamento(s) bloqueante(s)." }
+
+      - name: Parse check
+        shell: pwsh
+        run: |
+          $failed = $false
+          Get-ChildItem ./powershell -Recurse -Filter *.ps1 | ForEach-Object {
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors) | Out-Null
+            if ($errors) {
+              $failed = $true
+              Write-Host "::error file=$($_.Name)::Erros de parse em $($_.Name)"
+              $errors | ForEach-Object { Write-Host "  $($_.Message)" }
+            } else { Write-Host "OK  $($_.Name)" }
+          }
+          if ($failed) { throw "Um ou mais scripts falharam no parse." }
+
+  hygiene:
+    name: Higiene — quebras de linha
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      # CRLF num .sh quebra o script em Linux/macOS ("bad interpreter").
+      # O .gitattributes previne; isto é a rede de segurança.
+      - name: Garantir LF nos scripts shell
+        run: |
+          bad=$(find bash -name '*.sh' -exec grep -lU $'\r' {} + || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Arquivos com CRLF (precisam de LF):"; echo "$bad"; exit 1
+          fi
+          echo "Todos os .sh estão em LF."
