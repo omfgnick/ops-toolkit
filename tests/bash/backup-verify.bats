@@ -32,7 +32,7 @@ teardown() { rm -rf "$WORK"; }
 @test "backup e criado e verificado por sha256" {
   run bash "$SCRIPT" -s "$WORK/src" -d "$WORK/out"
   [ "$status" -eq 0 ]
-  [[ "$output" == *"restaurado e idêntico"* ]]
+  [[ "$output" == *"restored and identical"* ]]
   [ "$(find "$WORK/out" -name '*.tar.gz' | wc -l)" -eq 1 ]
 }
 

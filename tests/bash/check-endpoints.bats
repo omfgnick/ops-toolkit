@@ -22,5 +22,5 @@ setup() {
   # 'host -j' devolveria tabela em silêncio; agora falha explicando
   run bash "$SCRIPT" http://127.0.0.1:19999/ -j
   [ "$status" -eq 2 ]
-  [[ "$output" == *"antes dos argumentos"* ]]
+  [[ "$output" == *"before arguments"* ]]
 }
