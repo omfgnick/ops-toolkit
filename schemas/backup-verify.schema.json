@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/backup-verify.schema.json",
+  "title": "backup-verify.sh --json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "dry_run",
+    "source",
+    "archive",
+    "verification"
+  ],
+  "properties": {
+    "dry_run": {
+      "type": "boolean"
+    },
+    "source": {
+      "type": "string"
+    },
+    "archive": {
+      "type": "string"
+    },
+    "created": {
+      "type": "boolean"
+    },
+    "source_files": {
+      "type": "integer"
+    },
+    "source_bytes": {
+      "type": "integer"
+    },
+    "archive_bytes": {
+      "type": "integer"
+    },
+    "verification": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "restored",
+        "files_compared",
+        "mismatched"
+      ],
+      "properties": {
+        "restored": {
+          "type": "boolean",
+          "description": "true só se restaurou e bateu byte a byte"
+        },
+        "files_compared": {
+          "type": "integer"
+        },
+        "mismatched": {
+          "type": "integer"
+        }
+      }
+    },
+    "removed_by_retention": {
+      "type": "integer"
+    }
+  }
+}

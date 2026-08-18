@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/metrics-collector.schema.json",
+  "title": "metrics-collector.sh (JSON agregado)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "collected_at",
+    "host",
+    "reports"
+  ],
+  "properties": {
+    "collected_at": {
+      "type": "string"
+    },
+    "host": {
+      "type": "string"
+    },
+    "reports": {
+      "type": "object",
+      "description": "Chave = nome do script; valor = a saída dele"
+    }
+  }
+}

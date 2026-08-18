@@ -85,10 +85,21 @@ run_json incident-triage || true
 printf 'PermitRootLogin yes\nPasswordAuthentication no\n' >"$WORK/sshd_config"
 SSHD_CONFIG="$WORK/sshd_config" run_json audit-hardening || true
 
+run_json inventory || true
+
 mkdir -p "$WORK/logs"
 echo conteudo >"$WORK/logs/velho.log"
 touch -d '30 days ago' "$WORK/logs/velho.log"
 run_json rotate-logs -d "$WORK/logs" || true
+
+# backup-verify: cria, restaura e compara — precisa de origem de verdade
+mkdir -p "$WORK/src/sub"
+echo alfa >"$WORK/src/a.txt"
+echo beta >"$WORK/src/sub/b.txt"
+run_json backup-verify -s "$WORK/src" -d "$WORK/bkp" || true
+
+# metrics-collector agrega a saída dos outros
+run_json metrics-collector -s disk-space,incident-triage || true
 
 echo
 echo "== Integração: servidor HTTP local =="
