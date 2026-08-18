@@ -150,23 +150,34 @@ render_text() {
   echo " $NOW"
   echo "==============================================================="
   echo
-  echo "-- System ------------------------------------------------------"
+  # Section header padded to a fixed width. Done with padding rather than a fixed
+  # run of dashes because some titles interpolate a variable and would misalign.
+  section() {
+    local title="-- $1 "
+    local width=64
+    local pad=$((width - ${#title}))
+    [ "$pad" -lt 0 ] && pad=0
+    printf '%s%s
+' "$title" "$(printf '%*s' "$pad" '' | tr ' ' '-')"
+  }
+
+  section "System"
   printf '  Kernel      : %s\n' "$KERNEL"
   printf '  Uptime      : %s\n' "$UPTIME_S"
   printf '  Load        : %s %s %s  (%s per core, %s CPUs)\n' "$load1" "$load5" "$load15" "$LOAD_RATIO" "$CPUS"
   printf '  Memory      : %s%% used\n' "$MEM_USED_PCT"
   printf '  Fullest FS  : %s at %s%%\n' "$DISK_WORST_MOUNT" "$DISK_WORST_PCT"
   echo
-  echo "-- Failed units ------------------------------------------------"
+  section "Failed units"
   if [ -n "$FAILED_UNITS" ]; then printf '%s\n' "$FAILED_UNITS" | sed 's/^/  /'; else echo "  none"; fi
   echo
-  echo "-- Listening sockets -------------------------------------------"
+  section "Listening sockets"
   if [ -n "$LISTENING" ]; then printf '%s\n' "$LISTENING" | sed 's/^/  /'; else echo "  (ss unavailable)"; fi
   echo
-  echo "-- Recent errors (last $LOG_LINES) ------------------------------"
+  section "Recent errors (last $LOG_LINES)"
   if [ -n "$RECENT_ERRORS" ]; then printf '%s\n' "$RECENT_ERRORS" | sed 's/^/  /'; else echo "  none (or journalctl unavailable)"; fi
   echo
-  echo "-- Summary -----------------------------------------------------"
+  section "Summary"
   if [ ${#alerts[@]} -eq 0 ]; then
     echo "  Nothing alarming found."
   else

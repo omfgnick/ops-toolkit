@@ -189,24 +189,35 @@ render_text() {
   echo " $NOW"
   echo "==============================================================="
   echo
-  echo "-- Identity ----------------------------------------------------"
+  # Section header padded to a fixed width. Done with padding rather than a fixed
+  # run of dashes because some titles interpolate a variable and would misalign.
+  section() {
+    local title="-- $1 "
+    local width=64
+    local pad=$((width - ${#title}))
+    [ "$pad" -lt 0 ] && pad=0
+    printf '%s%s
+' "$title" "$(printf '%*s' "$pad" '' | tr ' ' '-')"
+  }
+
+  section "Identity"
   printf '  Hostname    : %s\n' "$HOSTNAME_S"
   printf '  FQDN        : %s\n' "$FQDN"
   printf '  Vendor      : %s\n' "${VENDOR:-(needs root/dmidecode)}"
   printf '  Model       : %s\n' "${MODEL:-(needs root/dmidecode)}"
   printf '  Serial      : %s\n' "${SERIAL:-(needs root/dmidecode)}"
   echo
-  echo "-- System ------------------------------------------------------"
+  section "System"
   printf '  SO          : %s\n' "$OS_NAME"
   printf '  Kernel      : %s (%s)\n' "$KERNEL" "$ARCH"
   printf '  Uptime      : %s\n' "$UPTIME_S"
   printf '  Packages    : %s (%s)\n' "$PKG_COUNT" "$PKG_MANAGER"
   echo
-  echo "-- Hardware ----------------------------------------------------"
+  section "Hardware"
   printf '  CPU         : %s x%s\n' "$CPU_MODEL" "$CPU_COUNT"
   printf '  Memory      : %s kB\n' "$MEM_TOTAL_KB"
   echo
-  echo "-- Disks -------------------------------------------------------"
+  section "Disks"
   if [ ${#disks[@]} -eq 0 ]; then
     echo "  (lsblk unavailable)"
   else
@@ -216,7 +227,7 @@ render_text() {
     done
   fi
   echo
-  echo "-- Network -----------------------------------------------------"
+  section "Network"
   if [ ${#ifaces[@]} -eq 0 ]; then
     echo "  (ip unavailable)"
   else

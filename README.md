@@ -24,6 +24,94 @@ tests/        Pester and Bats test suites
 docs/         Per-language reference
 ```
 
+## What it looks like
+
+Real output, captured from the Docker image in this repository — not mocked up.
+
+`incident-triage` — the first command to run when a ticket lands:
+
+```console
+$ incident-triage
+===============================================================
+ INCIDENT TRIAGE — 7e40c2effda0
+ 2026-08-18 22:25:17 UTC
+===============================================================
+
+-- System ------------------------------------------------------
+  Kernel      : Linux 6.18.33.1-microsoft-standard-WSL2
+  Uptime      : unknown
+  Load        : 0.28 0.38 0.36  (0.04 per core, 8 CPUs)
+  Memory      : 11% used
+  Fullest FS  : /etc/hosts at 4%
+
+-- Failed units ------------------------------------------------
+  none
+
+-- Listening sockets -------------------------------------------
+  (ss unavailable)
+
+-- Recent errors (last 15) -------------------------------------
+  none (or journalctl unavailable)
+
+-- Summary -----------------------------------------------------
+  Nothing alarming found.
+```
+
+`disk-space` — flags anything at or below the threshold and exits non-zero:
+
+```console
+$ disk-space -t 25
+FILESYSTEM               MOUNT                    SIZE     USED    AVAIL  FREE%  STATUS
+/dev/sdd                 /etc/hosts            1006.9G    31.7G   923.9G    96%  ok
+
+0 filesystem(s) at or below 25% free.
+```
+
+Every report script also speaks JSON, validated in CI against [schemas/](schemas/):
+
+```console
+$ disk-space -j | jq
+{
+  "threshold_percent": 15,
+  "low_count": 0,
+  "filesystems": [
+    {
+      "filesystem": "/dev/sdd",
+      "mount": "/etc/hosts",
+      "size_kb": 1055762868,
+      "used_kb": 33232832,
+      "available_kb": 968826564,
+      "free_percent": 96,
+      "low": false
+    }
+  ]
+}
+```
+
+`backup-verify` — the backup is only reported good after being restored and
+checksummed against the source:
+
+```console
+$ backup-verify -s /tmp/conf -d /tmp/bk
+Backup: /tmp/bk/conf-2026-08-18_222517.tar.gz
+  source       : /tmp/conf (2 file(s), 4117 bytes)
+  archive      : 192 bytes
+  verification : 2 file(s) restored and checked with sha256
+  result       : OK — restored and identical to the source
+```
+
+`metrics-collector -p` — ready for the node_exporter textfile collector:
+
+```console
+$ metrics-collector -p -s disk-space,incident-triage
+# HELP ops_toolkit_up 1 when collection finished without failures
+# TYPE ops_toolkit_up gauge
+ops_toolkit_up 0
+# HELP ops_toolkit_collect_timestamp_seconds When the collection ran
+# TYPE ops_toolkit_collect_timestamp_seconds gauge
+ops_toolkit_collect_timestamp_seconds 1787091917
+```
+
 ## Install
 
 ```bash

@@ -194,19 +194,30 @@ else
   if [ "$IS_ROOT" -eq 0 ]; then echo " (running unprivileged — some checks were skipped)"; fi
   echo "==============================================================="
   echo
-  echo "-- Login-capable accounts --------------------------------------"
+  # Section header padded to a fixed width. Done with padding rather than a fixed
+  # run of dashes because some titles interpolate a variable and would misalign.
+  section() {
+    local title="-- $1 "
+    local width=64
+    local pad=$((width - ${#title}))
+    [ "$pad" -lt 0 ] && pad=0
+    printf '%s%s
+' "$title" "$(printf '%*s' "$pad" '' | tr ' ' '-')"
+  }
+
+  section "Login-capable accounts"
   if [ -n "$login_users" ]; then printf '%s\n' "$login_users" | sed 's/^/  /'; else echo "  (unavailable)"; fi
   echo
-  echo "-- File modes --------------------------------------------------"
+  section "File modes"
   printf '  World-writable : %d\n' "$ww_count"
   if [ -n "$ww_examples" ]; then printf '%s' "$ww_examples" | sed 's/^/      /'; fi
   printf '  SUID binaries  : %d\n' "$suid_count"
   if [ -n "$suid_examples" ]; then printf '%s' "$suid_examples" | sed 's/^/      /'; fi
   echo
-  echo "-- Listening sockets -------------------------------------------"
+  section "Listening sockets"
   if [ -n "$listening" ]; then printf '%s\n' "$listening" | sed 's/^/  /'; else echo "  (ss unavailable)"; fi
   echo
-  echo "-- Findings ----------------------------------------------------"
+  section "Findings"
   if [ ${#findings[@]} -eq 0 ]; then
     echo "  Nothing flagged."
   else
