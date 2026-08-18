@@ -1,0 +1,27 @@
+name: Bug
+description: Um script não faz o que deveria
+labels: [bug]
+body:
+  - type: input
+    id: script
+    attributes:
+      label: Script
+      placeholder: bash/backup-folder.sh
+    validations: { required: true }
+  - type: input
+    id: env
+    attributes:
+      label: Ambiente
+      placeholder: Ubuntu 24.04 / Windows 11 + PowerShell 7.4
+    validations: { required: true }
+  - type: textarea
+    id: repro
+    attributes:
+      label: Como reproduzir
+      description: Comando executado e o que aconteceu vs. o esperado
+    validations: { required: true }
+  - type: textarea
+    id: output
+    attributes:
+      label: Saída
+      render: shell

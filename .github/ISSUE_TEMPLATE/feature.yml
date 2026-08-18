@@ -1,0 +1,13 @@
+name: Sugestão
+description: Ideia de script ou melhoria
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Que problema operacional isso resolve?
+    validations: { required: true }
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposta
