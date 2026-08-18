@@ -63,6 +63,17 @@ while getopts ":f:c:l:p:jh" opt; do
 done
 shift $((OPTIND - 1))
 
+# getopts para no primeiro operando: uma opção depois dele seria silenciosamente
+# tratada como argumento (ex.: "host -j" devolveria tabela em vez de JSON).
+for _arg in "$@"; do
+  case "$_arg" in
+    -*)
+      echo "Opções devem vir antes dos argumentos: '$_arg'. Use -h para ajuda." >&2
+      exit 2
+      ;;
+  esac
+done
+
 command -v ping >/dev/null 2>&1 || {
   echo "ping not found." >&2
   exit 2

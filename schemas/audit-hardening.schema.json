@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/audit-hardening.schema.json",
+  "title": "audit-hardening.sh --json",
+  "description": "Revisão de segurança somente leitura.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "hostname",
+    "as_root",
+    "suid_count",
+    "world_writable_count",
+    "findings",
+    "summary"
+  ],
+  "properties": {
+    "hostname": {
+      "type": "string",
+      "description": ""
+    },
+    "as_root": {
+      "type": "boolean"
+    },
+    "suid_count": {
+      "type": "integer",
+      "description": ""
+    },
+    "world_writable_count": {
+      "type": "integer",
+      "description": ""
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "severity",
+          "message"
+        ],
+        "properties": {
+          "severity": {
+            "enum": [
+              "high",
+              "medium",
+              "info"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": ""
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "high",
+        "medium",
+        "info"
+      ],
+      "properties": {
+        "high": {
+          "type": "integer",
+          "description": ""
+        },
+        "medium": {
+          "type": "integer",
+          "description": ""
+        },
+        "info": {
+          "type": "integer",
+          "description": ""
+        }
+      }
+    }
+  }
+}

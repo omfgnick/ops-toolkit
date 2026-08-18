@@ -32,7 +32,7 @@ Todo script segue o mesmo contrato — aprender um ensina os demais:
 |---|---|
 | `-h` / `--help` | Imprime o próprio cabeçalho do script: uso, opções, exemplos |
 | `--dry-run` / `-WhatIf` | Tudo que altera estado pode ser simulado antes |
-| `--json` | Scripts de relatório emitem saída estruturada para Grafana/Zabbix |
+| `--json` | Scripts de relatório emitem saída estruturada para Grafana/Zabbix, validada no CI contra [schemas/](schemas/) |
 | Códigos de saída | `0` sucesso · `1` falha em execução · `2` uso incorreto |
 
 As quebras de linha são impostas pelo `.gitattributes`: `.sh` sempre em **LF**
