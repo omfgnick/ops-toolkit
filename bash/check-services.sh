@@ -71,7 +71,7 @@ if [ -n "$INPUT_FILE" ]; then
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(echo "$line" | tr -d '[:space:]')"
-    [ -n "$line" ] && services+=("$line")
+    if [ -n "$line" ]; then services+=("$line"); fi
   done <"$INPUT_FILE"
 fi
 
@@ -101,7 +101,7 @@ for svc in "${services[@]}"; do
       elif systemctl restart "$svc" >/dev/null 2>&1; then
         action="restarted"
         state="$(systemctl is-active "$svc" 2>/dev/null || echo unknown)"
-        [ "$state" = "active" ] && failures=$((failures - 1))
+        if [ "$state" = "active" ]; then failures=$((failures - 1)); fi
       else
         action="restart-failed"
       fi
@@ -116,7 +116,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   first=1
   for row in "${rows[@]}"; do
     IFS='|' read -r name state action <<<"$row"
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     printf '{"name":"%s","state":"%s","action":"%s"}' \
       "$(json_escape "$name")" "$(json_escape "$state")" "$(json_escape "$action")"

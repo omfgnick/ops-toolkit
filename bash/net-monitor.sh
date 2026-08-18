@@ -84,7 +84,7 @@ if [ -n "$INPUT_FILE" ]; then
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(echo "$line" | tr -d '[:space:]')"
-    [ -n "$line" ] && hosts+=("$line")
+    if [ -n "$line" ]; then hosts+=("$line"); fi
   done <"$INPUT_FILE"
 fi
 
@@ -149,7 +149,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   first=1
   for row in "${rows[@]}"; do
     IFS='|' read -r host loss avg status <<<"$row"
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     if [ "$avg" = "-" ]; then avg_json=null; else avg_json="$avg"; fi
     printf '{"host":"%s","loss_percent":%s,"avg_ms":%s,"status":"%s"}' \
@@ -159,7 +159,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   first=1
   for row in ${port_rows+"${port_rows[@]}"}; do
     IFS='|' read -r host port state <<<"$row"
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     printf '{"host":"%s","port":%s,"state":"%s"}' "$(json_escape "$host")" "$port" "$state"
   done

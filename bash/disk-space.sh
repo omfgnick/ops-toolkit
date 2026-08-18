@@ -67,14 +67,14 @@ json_escape() {
 }
 
 df_args=(-P -k)
-[ "$ALL_FS" -eq 0 ] && df_args+=(-x tmpfs -x devtmpfs -x squashfs -x overlay)
+if [ "$ALL_FS" -eq 0 ]; then df_args+=(-x tmpfs -x devtmpfs -x squashfs -x overlay); fi
 
 low=0
 rows=()
 
 while read -r source size used avail capacity mount; do
   # Skips the header line emitted by df
-  [ "$source" = "Filesystem" ] && continue
+  if [ "$source" = "Filesystem" ]; then continue; fi
   used_pct="${capacity%\%}"
   free_pct=$((100 - used_pct))
   flag=0
@@ -104,7 +104,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   first=1
   for row in "${rows[@]}"; do
     IFS='|' read -r source mount size used avail free_pct flag <<<"$row"
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     printf '{"filesystem":"%s","mount":"%s","size_kb":%s,"used_kb":%s,"available_kb":%s,"free_percent":%s,"low":%s}' \
       "$(json_escape "$source")" "$(json_escape "$mount")" "$size" "$used" "$avail" "$free_pct" \
@@ -116,7 +116,7 @@ else
   for row in "${rows[@]}"; do
     IFS='|' read -r source mount size used avail free_pct flag <<<"$row"
     status="ok"
-    [ "$flag" -eq 1 ] && status="LOW"
+    if [ "$flag" -eq 1 ]; then status="LOW"; fi
     printf '%-24s %-20s %8s %8s %8s %5s%%  %s\n' \
       "$source" "$mount" "$(human "$size")" "$(human "$used")" "$(human "$avail")" "$free_pct" "$status"
   done

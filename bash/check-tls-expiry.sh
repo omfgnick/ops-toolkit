@@ -78,7 +78,7 @@ if [ -n "$INPUT_FILE" ]; then
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(echo "$line" | tr -d '[:space:]')"
-    [ -n "$line" ] && hosts+=("$line")
+    if [ -n "$line" ]; then hosts+=("$line"); fi
   done <"$INPUT_FILE"
 fi
 
@@ -98,7 +98,7 @@ now_epoch="$(date +%s)"
 for entry in "${hosts[@]}"; do
   host="${entry%%:*}"
   port="${entry##*:}"
-  [ "$port" = "$entry" ] && port=443
+  if [ "$port" = "$entry" ]; then port=443; fi
 
   end_date=""
   if cert="$(echo | timeout "$TIMEOUT" openssl s_client -servername "$host" -connect "$host:$port" 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null)"; then
@@ -135,7 +135,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   first=1
   for row in "${rows[@]}"; do
     IFS='|' read -r host port expires days status <<<"$row"
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     if [ "$days" = "-" ]; then days_json=null; else days_json="$days"; fi
     printf '{"host":"%s","port":%s,"expires":"%s","days_left":%s,"status":"%s"}' \

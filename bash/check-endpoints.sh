@@ -76,7 +76,7 @@ if [ -n "$INPUT_FILE" ]; then
   while IFS= read -r line; do
     line="${line%%#*}"
     line="$(echo "$line" | tr -d '[:space:]')"
-    [ -n "$line" ] && targets+=("$line")
+    if [ -n "$line" ]; then targets+=("$line"); fi
   done <"$INPUT_FILE"
 fi
 
@@ -120,7 +120,7 @@ if [ "$AS_JSON" -eq 1 ]; then
   first=1
   for row in "${rows[@]}"; do
     IFS='|' read -r url code ms status <<<"$row"
-    [ $first -eq 0 ] && printf ','
+    if [ $first -eq 0 ]; then printf ','; fi
     first=0
     printf '{"url":"%s","status_code":%s,"latency_ms":%s,"status":"%s"}' \
       "$(json_escape "$url")" "$code" "$ms" "$status"
