@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Versão fixa: o shellcheck do apt é mais antigo que o usado localmente e
       # as duas discordavam sobre alguns apontamentos (SC2015, por exemplo).
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Instalar PSScriptAnalyzer
         shell: pwsh
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Instalar bats e jq
         run: sudo apt-get update -qq && sudo apt-get install -y -qq bats jq
@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Versão fixa: o Pester 6 mudou o suficiente para quebrar a suíte, e um
       # teste que muda de comportamento sozinho não serve como rede.
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # -d mostra o diff e falha se algo estiver fora do padrão.
       # Para corrigir localmente: shfmt -i 2 -ci -w bash/*.sh
@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # gitleaks varre o histórico, não só o commit atual
 
@@ -142,7 +142,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # CRLF num .sh quebra o script em Linux/macOS ("bad interpreter").
       # O .gitattributes previne; isto é a rede de segurança.
