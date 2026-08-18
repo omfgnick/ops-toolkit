@@ -19,7 +19,7 @@ jobs:
       contents: read
       actions: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # 'actions' cobre os workflows deste repo. Shell e PowerShell não têm
       # suporte no CodeQL — quem cobre esses é o ShellCheck/PSScriptAnalyzer.
