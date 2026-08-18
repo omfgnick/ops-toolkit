@@ -12,12 +12,18 @@
 #
 set -euo pipefail
 
+# Imprime só o bloco de cabeçalho (pula o shebang e para no primeiro
+# comando), em vez de despejar todo comentário do arquivo.
+usage() {
+  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
+}
+
 PORTS="1-65535"
 
 while getopts ":p:h" opt; do
   case "$opt" in
     p) PORTS="$OPTARG" ;;
-    h) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    h) usage; exit 0 ;;
     :) echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
     \?) echo "Unknown option: -$OPTARG" >&2; exit 2 ;;
   esac
