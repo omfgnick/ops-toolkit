@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/disk-space.schema.json",
+  "title": "disk-space.sh --json",
+  "description": "Espaço livre por sistema de arquivos.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "threshold_percent",
+    "low_count",
+    "filesystems"
+  ],
+  "properties": {
+    "threshold_percent": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "low_count": {
+      "type": "integer",
+      "description": "Quantos filesystems estão no ou abaixo do limiar"
+    },
+    "filesystems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "filesystem",
+          "mount",
+          "size_kb",
+          "used_kb",
+          "available_kb",
+          "free_percent",
+          "low"
+        ],
+        "properties": {
+          "filesystem": {
+            "type": "string",
+            "description": "Dispositivo/origem"
+          },
+          "mount": {
+            "type": "string",
+            "description": "Ponto de montagem"
+          },
+          "size_kb": {
+            "type": "integer",
+            "description": ""
+          },
+          "used_kb": {
+            "type": "integer",
+            "description": ""
+          },
+          "available_kb": {
+            "type": "integer",
+            "description": ""
+          },
+          "free_percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "low": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

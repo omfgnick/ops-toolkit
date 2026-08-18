@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/check-services.schema.json",
+  "title": "check-services.sh --json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "checked",
+    "down",
+    "services"
+  ],
+  "properties": {
+    "checked": {
+      "type": "integer",
+      "description": ""
+    },
+    "down": {
+      "type": "integer",
+      "description": ""
+    },
+    "services": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "state",
+          "action"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": ""
+          },
+          "state": {
+            "type": "string",
+            "description": "saída de systemctl is-active"
+          },
+          "action": {
+            "enum": [
+              "none",
+              "would-restart",
+              "restarted",
+              "restart-failed"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

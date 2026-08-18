@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/rotate-logs.schema.json",
+  "title": "rotate-logs.sh --json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "directory",
+    "applied",
+    "compressed",
+    "deleted",
+    "failed",
+    "actions"
+  ],
+  "properties": {
+    "directory": {
+      "type": "string",
+      "description": ""
+    },
+    "applied": {
+      "type": "boolean",
+      "description": "false = dry-run, nada foi alterado"
+    },
+    "compressed": {
+      "type": "integer",
+      "description": ""
+    },
+    "deleted": {
+      "type": "integer",
+      "description": ""
+    },
+    "failed": {
+      "type": "integer",
+      "description": ""
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "path",
+          "result"
+        ],
+        "properties": {
+          "action": {
+            "enum": [
+              "compress",
+              "delete"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "description": ""
+          },
+          "result": {
+            "enum": [
+              "planned",
+              "done",
+              "failed"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

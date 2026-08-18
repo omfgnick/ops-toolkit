@@ -57,6 +57,17 @@ while getopts ":f:t:c:jh" opt; do
 done
 shift $((OPTIND - 1))
 
+# getopts para no primeiro operando: uma opção depois dele seria silenciosamente
+# tratada como argumento (ex.: "host -j" devolveria tabela em vez de JSON).
+for _arg in "$@"; do
+  case "$_arg" in
+    -*)
+      echo "Opções devem vir antes dos argumentos: '$_arg'. Use -h para ajuda." >&2
+      exit 2
+      ;;
+  esac
+done
+
 command -v curl >/dev/null 2>&1 || {
   echo "curl not found." >&2
   exit 2
@@ -122,8 +133,10 @@ if [ "$AS_JSON" -eq 1 ]; then
     IFS='|' read -r url code ms status <<<"$row"
     if [ $first -eq 0 ]; then printf ','; fi
     first=0
+    # '000' (inalcançável) não é número JSON válido: zero à esquerda é proibido.
+    # 10# força base decimal — sem isso, '008' seria lido como octal e falharia.
     printf '{"url":"%s","status_code":%s,"latency_ms":%s,"status":"%s"}' \
-      "$(json_escape "$url")" "$code" "$ms" "$status"
+      "$(json_escape "$url")" "$((10#$code))" "$ms" "$status"
   done
   printf ']}\n'
 else

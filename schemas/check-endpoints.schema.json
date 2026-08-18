@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/check-endpoints.schema.json",
+  "title": "check-endpoints.sh --json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "checked",
+    "failed",
+    "endpoints"
+  ],
+  "properties": {
+    "checked": {
+      "type": "integer",
+      "description": ""
+    },
+    "failed": {
+      "type": "integer",
+      "description": ""
+    },
+    "endpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "url",
+          "status_code",
+          "latency_ms",
+          "status"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": ""
+          },
+          "status_code": {
+            "type": "integer",
+            "description": "0 quando inalcançável"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "description": ""
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "bad-status",
+              "unexpected-code",
+              "unreachable"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

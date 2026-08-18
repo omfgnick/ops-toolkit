@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/check-tls-expiry.schema.json",
+  "title": "check-tls-expiry.sh --json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "warn_days",
+    "problems",
+    "hosts"
+  ],
+  "properties": {
+    "warn_days": {
+      "type": "integer",
+      "description": ""
+    },
+    "problems": {
+      "type": "integer",
+      "description": ""
+    },
+    "hosts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "host",
+          "port",
+          "expires",
+          "days_left",
+          "status"
+        ],
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": ""
+          },
+          "port": {
+            "type": "integer",
+            "description": ""
+          },
+          "expires": {
+            "type": "string",
+            "description": ""
+          },
+          "days_left": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "EXPIRING",
+              "EXPIRED",
+              "unreachable",
+              "unparsed-date"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

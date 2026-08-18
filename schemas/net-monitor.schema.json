@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/net-monitor.schema.json",
+  "title": "net-monitor.sh --json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pings",
+    "latency_threshold_ms",
+    "problems",
+    "hosts",
+    "ports"
+  ],
+  "properties": {
+    "pings": {
+      "type": "integer",
+      "description": ""
+    },
+    "latency_threshold_ms": {
+      "type": "integer",
+      "description": ""
+    },
+    "problems": {
+      "type": "integer",
+      "description": ""
+    },
+    "hosts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "host",
+          "loss_percent",
+          "avg_ms",
+          "status"
+        ],
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": ""
+          },
+          "loss_percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "avg_ms": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "packet-loss",
+              "high-latency",
+              "unreachable"
+            ]
+          }
+        }
+      }
+    },
+    "ports": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "host",
+          "port",
+          "state"
+        ],
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": ""
+          },
+          "port": {
+            "type": "integer",
+            "description": ""
+          },
+          "state": {
+            "enum": [
+              "open",
+              "closed"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

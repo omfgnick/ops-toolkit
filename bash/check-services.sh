@@ -57,6 +57,17 @@ while getopts ":f:rnjh" opt; do
 done
 shift $((OPTIND - 1))
 
+# getopts para no primeiro operando: uma opção depois dele seria silenciosamente
+# tratada como argumento (ex.: "host -j" devolveria tabela em vez de JSON).
+for _arg in "$@"; do
+  case "$_arg" in
+    -*)
+      echo "Opções devem vir antes dos argumentos: '$_arg'. Use -h para ajuda." >&2
+      exit 2
+      ;;
+  esac
+done
+
 command -v systemctl >/dev/null 2>&1 || {
   echo "systemctl not found; this script needs systemd." >&2
   exit 2

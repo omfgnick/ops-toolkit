@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/incident-triage.schema.json",
+  "title": "incident-triage.sh --json",
+  "description": "Retrato do estado da máquina.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "hostname",
+    "timestamp",
+    "kernel",
+    "uptime",
+    "load",
+    "memory",
+    "disk",
+    "failed_units",
+    "alerts"
+  ],
+  "properties": {
+    "hostname": {
+      "type": "string",
+      "description": ""
+    },
+    "timestamp": {
+      "type": "string",
+      "description": ""
+    },
+    "kernel": {
+      "type": "string",
+      "description": ""
+    },
+    "uptime": {
+      "type": "string",
+      "description": ""
+    },
+    "load": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "1m",
+        "5m",
+        "15m",
+        "per_core",
+        "cpus"
+      ],
+      "properties": {
+        "1m": {
+          "type": "number",
+          "description": ""
+        },
+        "5m": {
+          "type": "number",
+          "description": ""
+        },
+        "15m": {
+          "type": "number",
+          "description": ""
+        },
+        "per_core": {
+          "type": "number",
+          "description": "Carga dividida pelo número de CPUs"
+        },
+        "cpus": {
+          "type": "integer",
+          "description": ""
+        }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_kb",
+        "available_kb",
+        "used_percent"
+      ],
+      "properties": {
+        "total_kb": {
+          "type": "integer",
+          "description": ""
+        },
+        "available_kb": {
+          "type": "integer",
+          "description": ""
+        },
+        "used_percent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "disk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fullest_mount",
+        "used_percent"
+      ],
+      "properties": {
+        "fullest_mount": {
+          "type": "string",
+          "description": ""
+        },
+        "used_percent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "failed_units": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Vazio significa nada de anormal; o script sai com 1 se houver alerta"
+    }
+  }
+}

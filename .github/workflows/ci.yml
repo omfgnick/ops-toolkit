@@ -93,6 +93,22 @@ jobs:
       - name: Rodar testes
         run: bats --print-output-on-failure tests/bash
 
+  schemas:
+    name: Contrato JSON + integração
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Instalar dependências
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-jsonschema openssl curl iputils-ping
+
+      # Roda os scripts de verdade (com servidor HTTP e TLS locais) e valida a
+      # saída --json contra schemas/. É o que garante que quem consome o JSON
+      # não quebra por uma mudança silenciosa de formato.
+      - name: Validar saída contra os schemas
+        run: bash tests/validate-schemas.sh
+
   bats-matrix:
     name: Bats — ${{ matrix.distro }}
     runs-on: ubuntu-latest
