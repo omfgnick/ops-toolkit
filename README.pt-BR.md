@@ -71,6 +71,9 @@ Referência completa: [docs/powershell.pt-BR.md](docs/powershell.pt-BR.md)
 | `incident-triage.sh` | Retrato da máquina em um comando, para abrir o atendimento |
 | `net-monitor.sh` | Perda/latência de ping e checagem de portas TCP, para monitorar links |
 | `audit-hardening.sh` | Revisão de segurança somente leitura: contas, sudo, SSH, permissões |
+| `metrics-collector.sh` | Roda os scripts de relatório e emite um JSON único, ou métricas Prometheus para o node_exporter |
+| `backup-verify.sh` | Backup que só é considerado bom depois de restaurado e conferido por hash |
+| `inventory.sh` | Inventário da máquina: identificação, SO, CPU, discos, rede, pacotes |
 
 Referência completa: [docs/bash.pt-BR.md](docs/bash.pt-BR.md)
 

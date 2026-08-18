@@ -71,6 +71,9 @@ Full reference: [docs/powershell.en.md](docs/powershell.en.md)
 | `incident-triage.sh` | One-shot machine snapshot for the start of a ticket |
 | `net-monitor.sh` | Ping loss/latency and TCP port checks for link monitoring |
 | `audit-hardening.sh` | Read-only security review: accounts, sudo, SSH, file modes |
+| `metrics-collector.sh` | Runs the report scripts and emits one JSON, or Prometheus metrics for node_exporter |
+| `backup-verify.sh` | Backup that is only trusted after being restored and checksummed |
+| `inventory.sh` | Machine inventory: identity, OS, CPU, disks, network, packages |
 
 Full reference: [docs/bash.en.md](docs/bash.en.md)
 
