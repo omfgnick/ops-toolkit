@@ -34,6 +34,21 @@ usage() {
   awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 }
 
+readonly OPS_TOOLKIT_VERSION="1.0.0"
+
+# --version / --help before getopts: getopts only understands single-letter
+# options, and these two are what people reach for by reflex.
+case "${1:-}" in
+  --version)
+    echo "$(basename "$0") (ops-toolkit) $OPS_TOOLKIT_VERSION"
+    exit 0
+    ;;
+  --help)
+    usage
+    exit 0
+    ;;
+esac
+
 COUNT=4
 MAX_MS=150
 PORTS=""
@@ -63,12 +78,12 @@ while getopts ":f:c:l:p:jh" opt; do
 done
 shift $((OPTIND - 1))
 
-# getopts para no primeiro operando: uma opção depois dele seria silenciosamente
-# tratada como argumento (ex.: "host -j" devolveria tabela em vez de JSON).
+# getopts stops at the first operand: an option after it would silently be
+# treated as an argument (e.g. "host -j" would print a table, not JSON).
 for _arg in "$@"; do
   case "$_arg" in
     -*)
-      echo "Opções devem vir antes dos argumentos: '$_arg'. Use -h para ajuda." >&2
+      echo "Options must come before arguments: '$_arg'. Use -h for help." >&2
       exit 2
       ;;
   esac

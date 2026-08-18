@@ -30,6 +30,21 @@ usage() {
   awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 }
 
+readonly OPS_TOOLKIT_VERSION="1.0.0"
+
+# --version / --help before getopts: getopts only understands single-letter
+# options, and these two are what people reach for by reflex.
+case "${1:-}" in
+  --version)
+    echo "$(basename "$0") (ops-toolkit) $OPS_TOOLKIT_VERSION"
+    exit 0
+    ;;
+  --help)
+    usage
+    exit 0
+    ;;
+esac
+
 WARN_DAYS=30
 TIMEOUT=10
 AS_JSON=0
@@ -57,12 +72,12 @@ while getopts ":f:w:t:jh" opt; do
 done
 shift $((OPTIND - 1))
 
-# getopts para no primeiro operando: uma opção depois dele seria silenciosamente
-# tratada como argumento (ex.: "host -j" devolveria tabela em vez de JSON).
+# getopts stops at the first operand: an option after it would silently be
+# treated as an argument (e.g. "host -j" would print a table, not JSON).
 for _arg in "$@"; do
   case "$_arg" in
     -*)
-      echo "Opções devem vir antes dos argumentos: '$_arg'. Use -h para ajuda." >&2
+      echo "Options must come before arguments: '$_arg'. Use -h for help." >&2
       exit 2
       ;;
   esac
@@ -72,11 +87,11 @@ command -v openssl >/dev/null 2>&1 || {
   echo "openssl not found." >&2
   exit 2
 }
-# 'date -d' é do coreutils GNU. No busybox a sintaxe é outra e todo host sairia
-# como 'unparsed-date' — melhor dizer o motivo do que devolver um relatório
-# inteiro de falsos negativos.
+# 'date -d' is GNU coreutils. On busybox the syntax differs and every host would
+# come out as 'unparsed-date' — better to state the reason than to return a whole
+# report of false negatives.
 if ! date -d "Jan 1 00:00:00 2030 GMT" +%s >/dev/null 2>&1; then
-  echo "este 'date' não aceita -d (busybox?); o script precisa do coreutils GNU." >&2
+  echo "this 'date' does not accept -d (busybox?); GNU coreutils is required." >&2
   exit 2
 fi
 for v in "$WARN_DAYS" "$TIMEOUT"; do

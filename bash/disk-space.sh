@@ -27,6 +27,21 @@ usage() {
   awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 }
 
+readonly OPS_TOOLKIT_VERSION="1.0.0"
+
+# --version / --help before getopts: getopts only understands single-letter
+# options, and these two are what people reach for by reflex.
+case "${1:-}" in
+  --version)
+    echo "$(basename "$0") (ops-toolkit) $OPS_TOOLKIT_VERSION"
+    exit 0
+    ;;
+  --help)
+    usage
+    exit 0
+    ;;
+esac
+
 THRESHOLD=15
 AS_JSON=0
 ALL_FS=0
@@ -67,15 +82,15 @@ json_escape() {
 }
 
 df_args=(-P -k)
-# O -x é do coreutils GNU; o df do busybox não tem. Sem esta checagem o df
-# falharia, a lista sairia vazia e o relatório diria "0 filesystems" — uma
-# resposta errada em silêncio, que é o pior desfecho possível num script de
-# monitoração.
+# -x is GNU coreutils; busybox df does not have it. Without this check df would
+# fail, the list would come out empty and the report would say "0 filesystems" —
+# a silently wrong answer, which is the worst possible outcome in a monitoring
+# script.
 if [ "$ALL_FS" -eq 0 ]; then
   if df -P -k -x tmpfs >/dev/null 2>&1; then
     df_args+=(-x tmpfs -x devtmpfs -x squashfs -x overlay)
   else
-    echo "aviso: este df não suporta -x (busybox?); pseudo-filesystems serão incluídos." >&2
+    echo "warning: this df has no -x (busybox?); pseudo filesystems will be included." >&2
   fi
 fi
 
