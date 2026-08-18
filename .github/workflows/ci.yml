@@ -127,9 +127,9 @@ jobs:
       - name: Instalar dependências
         run: |
           if command -v apt-get >/dev/null; then
-            apt-get update -qq && apt-get install -y -qq bats jq
+            apt-get update -qq && apt-get install -y -qq bats jq curl openssl
           else
-            dnf install -y -q jq git
+            dnf install -y -q jq git curl openssl
             git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
             /tmp/bats-core/install.sh /usr/local
           fi
@@ -194,6 +194,18 @@ jobs:
 
       # CRLF num .sh quebra o script em Linux/macOS ("bad interpreter").
       # O .gitattributes previne; isto é a rede de segurança.
+      # Script sem bit de execução obriga o usuário a chamar 'bash script.sh'.
+      # Os 8 scripts novos foram commitados como 644 e o CI só percebeu quando
+      # a validação tentou executá-los.
+      - name: Garantir que os scripts são executáveis
+        run: |
+          bad=$(find bash -name '*.sh' ! -perm -u+x -print)
+          if [ -n "$bad" ]; then
+            echo "::error::Sem bit de execução (use: git update-index --chmod=+x <arquivo>):"
+            echo "$bad"; exit 1
+          fi
+          echo "Todos os scripts são executáveis."
+
       - name: Garantir LF nos scripts shell
         run: |
           bad=$(find bash -name '*.sh' -exec grep -lU $'\r' {} + || true)
