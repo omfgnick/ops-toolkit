@@ -12,12 +12,13 @@ O CI roda automaticamente, mas dá para verificar tudo localmente:
 shellcheck -S style bash/*.sh
 bash -n bash/algum-script.sh
 bats tests/bash            # se tiver o bats instalado
+shfmt -i 2 -ci -d bash/    # formatação (use -w para corrigir)
 ```
 
 ```powershell
 # PowerShell
 Invoke-ScriptAnalyzer -Path ./powershell -Recurse -Settings ./PSScriptAnalyzerSettings.psd1
-Invoke-Pester ./tests/powershell
+Invoke-Pester ./tests/powershell   # requer Pester 5.7.1
 ```
 
 ## Padrões
