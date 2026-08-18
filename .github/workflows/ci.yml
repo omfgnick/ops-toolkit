@@ -93,6 +93,34 @@ jobs:
       - name: Rodar testes
         run: bats --print-output-on-failure tests/bash
 
+  bats-matrix:
+    name: Bats — ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [debian:12, rockylinux:9]
+    container: ${{ matrix.distro }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # Os scripts assumem coreutils GNU. Rodar fora do Ubuntu é o que pega
+      # dependência acidental de distro — foi assim que apareceu o bug do
+      # sshd_config, que só existia onde o arquivo era legível.
+      - name: Instalar dependências
+        run: |
+          if command -v apt-get >/dev/null; then
+            apt-get update -qq && apt-get install -y -qq bats jq
+          else
+            dnf install -y -q jq git
+            git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
+            /tmp/bats-core/install.sh /usr/local
+          fi
+
+      - name: Rodar testes
+        run: bats --print-output-on-failure tests/bash
+
   pester:
     name: Pester — testes PowerShell
     runs-on: ubuntu-latest

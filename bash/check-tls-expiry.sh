@@ -61,6 +61,13 @@ command -v openssl >/dev/null 2>&1 || {
   echo "openssl not found." >&2
   exit 2
 }
+# 'date -d' é do coreutils GNU. No busybox a sintaxe é outra e todo host sairia
+# como 'unparsed-date' — melhor dizer o motivo do que devolver um relatório
+# inteiro de falsos negativos.
+if ! date -d "Jan 1 00:00:00 2030 GMT" +%s >/dev/null 2>&1; then
+  echo "este 'date' não aceita -d (busybox?); o script precisa do coreutils GNU." >&2
+  exit 2
+fi
 for v in "$WARN_DAYS" "$TIMEOUT"; do
   case "$v" in '' | *[!0-9]*)
     echo "Day/second values must be integers." >&2

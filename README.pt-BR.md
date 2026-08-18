@@ -77,7 +77,11 @@ Referência completa: [docs/bash.pt-BR.md](docs/bash.pt-BR.md)
 ## Requisitos
 
 - **PowerShell** 5.1 (Windows) ou 7.x (multiplataforma)
-- **Bash** 4+; o `portscan-vuln.sh` também precisa de `nmap`
+- **Bash** 4+ com **coreutils GNU** — testado em Ubuntu, Debian 12 e Rocky 9
+  no CI. BusyBox (Alpine) *não* é suportado: seu `df`, `date` e `find` não têm
+  as opções que estes scripts usam. Os scripts detectam isso e avisam, em vez
+  de devolver uma resposta errada em silêncio.
+- O `portscan-vuln.sh` também precisa de `nmap`; o `check-tls-expiry.sh`, de `openssl`
 
 ## Desenvolvimento
 

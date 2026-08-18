@@ -67,7 +67,17 @@ json_escape() {
 }
 
 df_args=(-P -k)
-if [ "$ALL_FS" -eq 0 ]; then df_args+=(-x tmpfs -x devtmpfs -x squashfs -x overlay); fi
+# O -x é do coreutils GNU; o df do busybox não tem. Sem esta checagem o df
+# falharia, a lista sairia vazia e o relatório diria "0 filesystems" — uma
+# resposta errada em silêncio, que é o pior desfecho possível num script de
+# monitoração.
+if [ "$ALL_FS" -eq 0 ]; then
+  if df -P -k -x tmpfs >/dev/null 2>&1; then
+    df_args+=(-x tmpfs -x devtmpfs -x squashfs -x overlay)
+  else
+    echo "aviso: este df não suporta -x (busybox?); pseudo-filesystems serão incluídos." >&2
+  fi
+fi
 
 low=0
 rows=()
