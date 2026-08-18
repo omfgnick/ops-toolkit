@@ -31,6 +31,21 @@ usage() {
   awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 }
 
+readonly OPS_TOOLKIT_VERSION="1.0.0"
+
+# --version / --help before getopts: getopts only understands single-letter
+# options, and these two are what people reach for by reflex.
+case "${1:-}" in
+  --version)
+    echo "$(basename "$0") (ops-toolkit) $OPS_TOOLKIT_VERSION"
+    exit 0
+    ;;
+  --help)
+    usage
+    exit 0
+    ;;
+esac
+
 SCAN_DIRS=()
 AS_JSON=0
 
@@ -100,12 +115,12 @@ else
 fi
 
 # ---- SSH ---------------------------------------------------------------------
-# Sobrescrevível para permitir teste com um arquivo de exemplo
+# Overridable so tests can point at a sample file
 SSHD_CONFIG="${SSHD_CONFIG:-/etc/ssh/sshd_config}"
 if [ -r "$SSHD_CONFIG" ]; then
   # The effective value is the FIRST occurrence; commented lines do not count
   sshd_value() {
-    # grep sem correspondência retorna 1 e, com 'pipefail', derrubaria o script
+    # grep returns 1 when nothing matches and, with 'pipefail', that would kill
     grep -Ei "^[[:space:]]*$1[[:space:]]+" "$SSHD_CONFIG" 2>/dev/null | head -1 | awk '{ print tolower($2) }' || true
   }
   permit_root="$(sshd_value PermitRootLogin)"

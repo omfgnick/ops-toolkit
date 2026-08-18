@@ -209,6 +209,20 @@ jobs:
           fi
           echo "Todos os scripts são executáveis."
 
+      # A versão é embutida em cada script (eles são standalone); este check é
+      # o que impede um deles de ficar para trás numa troca de versão.
+      - name: Versão consistente com o arquivo VERSION
+        run: |
+          want=$(cat VERSION)
+          fail=0
+          for f in bash/*.sh; do
+            got=$(grep -oP 'OPS_TOOLKIT_VERSION="\K[^"]+' "$f" | head -1)
+            if [ "$got" != "$want" ]; then
+              echo "::error file=$f::declara '$got', esperado '$want'"; fail=1
+            fi
+          done
+          exit $fail
+
       - name: Garantir LF nos scripts shell
         run: |
           bad=$(find bash -name '*.sh' -exec grep -lU $'\r' {} + || true)

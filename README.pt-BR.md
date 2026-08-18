@@ -24,6 +24,24 @@ tests/        Suítes de teste Pester e Bats
 docs/         Referência por linguagem
 ```
 
+## Instalação
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/install.sh | bash
+```
+
+Cada script vira um comando sem o `.sh`, então `incident-triage -j` funciona de
+qualquer diretório. Com `sudo` instala em `/usr/local/bin`; sem, em
+`~/.local/bin`. Para desinstalar, `./install.sh -u` — ele só remove arquivos
+com a marca do toolkit, preservando comando homônimo de outra origem.
+
+Prefere container? `docker build -t ops-toolkit . && docker run --rm ops-toolkit incident-triage`.
+Para inspecionar o **host** em vez do container, veja as notas no [Dockerfile](Dockerfile).
+
+Todo comando responde `--version` e `--help`, e `man incident-triage` funciona
+depois de rodar `tools/gen-man.sh` (as páginas saem do mesmo cabeçalho que
+alimenta o `--help`, então não divergem).
+
 ## Convenções
 
 Todo script segue o mesmo contrato — aprender um ensina os demais:

@@ -12,11 +12,26 @@
 #
 set -euo pipefail
 
-# Imprime só o bloco de cabeçalho (pula o shebang e para no primeiro
-# comando), em vez de despejar todo comentário do arquivo.
+# Print only the header block (skip the shebang, stop at the first command)
+# instead of dumping every comment in the file.
 usage() {
   awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 }
+
+readonly OPS_TOOLKIT_VERSION="1.0.0"
+
+# --version / --help before getopts: getopts only understands single-letter
+# options, and these two are what people reach for by reflex.
+case "${1:-}" in
+  --version)
+    echo "$(basename "$0") (ops-toolkit) $OPS_TOOLKIT_VERSION"
+    exit 0
+    ;;
+  --help)
+    usage
+    exit 0
+    ;;
+esac
 
 PORTS="1-65535"
 
