@@ -76,6 +76,40 @@ jobs:
           }
           if ($failed) { throw "Um ou mais scripts falharam no parse." }
 
+  bats:
+    name: Bats — testes Bash
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar bats e jq
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq bats jq
+
+      - name: Rodar testes
+        run: bats --print-output-on-failure tests/bash
+
+  pester:
+    name: Pester — testes PowerShell
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # Versão fixa: o Pester 6 mudou o suficiente para quebrar a suíte, e um
+      # teste que muda de comportamento sozinho não serve como rede.
+      - name: Rodar testes
+        shell: pwsh
+        env:
+          PESTER_VERSION: 5.7.1
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion $env:PESTER_VERSION -Scope CurrentUser -Force -SkipPublisherCheck
+          Import-Module Pester -RequiredVersion $env:PESTER_VERSION
+          $r = Invoke-Pester -Path ./tests/powershell -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "$($r.FailedCount) teste(s) falharam." }
+          Write-Host "Pester: $($r.PassedCount) teste(s) passaram."
+
   format:
     name: Formatação (shfmt)
     runs-on: ubuntu-latest
