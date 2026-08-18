@@ -129,7 +129,10 @@ jobs:
           if command -v apt-get >/dev/null; then
             apt-get update -qq && apt-get install -y -qq bats jq curl openssl
           else
-            dnf install -y -q jq git curl openssl
+            dnf install -y -q jq git openssl
+            # O Rocky já traz curl-minimal, que conflita com o pacote 'curl'
+            # completo; o binário é o mesmo, então só instala se faltar.
+            command -v curl >/dev/null || dnf install -y -q --allowerasing curl
             git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats-core
             /tmp/bats-core/install.sh /usr/local
           fi
