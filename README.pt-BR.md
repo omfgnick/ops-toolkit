@@ -63,6 +63,14 @@ Referência completa: [docs/powershell.pt-BR.md](docs/powershell.pt-BR.md)
 |---|---|
 | `backup-folder.sh` | Backup compactado com verificação de integridade e e-mail opcional |
 | `portscan-vuln.sh` | Varredura com nmap e classificação simples de risco por porta |
+| `check-services.sh` | Saúde de serviços systemd, com opção de reiniciar os parados |
+| `disk-space.sh` | Espaço livre por sistema de arquivos, sinalizando o que passa do limiar |
+| `rotate-logs.sh` | Compacta logs antigos e remove arquivos vencidos (dry-run por padrão) |
+| `check-endpoints.sh` | Disponibilidade HTTP(S), código de status e latência |
+| `check-tls-expiry.sh` | Dias restantes de validade de certificados TLS |
+| `incident-triage.sh` | Retrato da máquina em um comando, para abrir o atendimento |
+| `net-monitor.sh` | Perda/latência de ping e checagem de portas TCP, para monitorar links |
+| `audit-hardening.sh` | Revisão de segurança somente leitura: contas, sudo, SSH, permissões |
 
 Referência completa: [docs/bash.pt-BR.md](docs/bash.pt-BR.md)
 
