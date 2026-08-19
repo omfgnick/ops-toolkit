@@ -112,6 +112,33 @@ ops_toolkit_up 0
 ops_toolkit_collect_timestamp_seconds 1787091917
 ```
 
+## Interactive menu
+
+If you would rather pick from a list than remember names and flags:
+
+```bash
+./menu.sh
+```
+
+```powershell
+.\Menu.ps1
+```
+
+The list is built from the scripts themselves, so a new script appears with no
+change to the menu — and its description comes from the same header that feeds
+`--help`, so the two cannot disagree.
+
+Type a number to run one; anything after the number is passed straight through
+(`7 -t 20`). The PowerShell menu goes further and prompts for each of the
+chosen script's own parameters.
+
+Both also work without the menu, which is what a scheduled task needs:
+
+```bash
+./menu.sh -l                        # list names
+./menu.sh -r disk-space -t 20       # run one directly
+```
+
 ## Install
 
 ```bash
