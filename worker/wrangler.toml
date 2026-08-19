@@ -1,0 +1,5 @@
+name = "ops"
+main = "redirect.js"
+compatibility_date = "2026-01-01"
+
+# Sem KV nem estado: este worker só busca um arquivo do GitHub e devolve.
