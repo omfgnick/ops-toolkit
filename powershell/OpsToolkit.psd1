@@ -24,6 +24,7 @@
         'Get-SecurityAudit'
         'Invoke-CommonRepair'
         'Get-LocalUserAudit'
+        'Get-PendingUpdate'
         'Backup-Folder'
         'Invoke-BackupRetention'
     )

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/pending-updates.schema.json",
+  "title": "pending-updates.sh --json",
+  "description": "Atualizacoes pendentes, atualizacoes de seguranca, idade dos metadados e reboot pendente.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "host",
+    "generated_at",
+    "package_manager",
+    "metadata_age_days",
+    "metadata_stale",
+    "stale_after_days",
+    "refreshed",
+    "note",
+    "pending_count",
+    "security_count",
+    "reboot_required",
+    "reboot_reason",
+    "packages",
+    "status"
+  ],
+  "properties": {
+    "host": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "package_manager": {
+      "type": "string",
+      "enum": [
+        "apt",
+        "dnf",
+        "yum",
+        "zypper",
+        "pacman",
+        "apk",
+        "unknown"
+      ]
+    },
+    "metadata_age_days": {
+      "type": "integer",
+      "minimum": -1,
+      "description": "Dias desde a ultima atualizacao da lista de pacotes; -1 quando nao da para saber"
+    },
+    "metadata_stale": {
+      "type": "boolean",
+      "description": "Verdadeiro quando a idade da lista alcancou stale_after_days (comparacao inclusiva), ou quando a idade e desconhecida. Com isto verdadeiro, pending_count igual a 0 nao significa nada."
+    },
+    "stale_after_days": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "refreshed": {
+      "type": "boolean",
+      "description": "Se este run atualizou os metadados (-r com root)"
+    },
+    "note": {
+      "type": "string",
+      "description": "Vazio quando nao ha o que ressalvar"
+    },
+    "pending_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "security_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Zero tambem quando o gerenciador nao sabe separar seguranca do resto"
+    },
+    "reboot_required": {
+      "type": "boolean"
+    },
+    "reboot_reason": {
+      "type": "string",
+      "description": "Vazio quando reboot_required e falso"
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "available"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "available": {
+            "type": "string",
+            "description": "Versao disponivel, ou '-' quando o gerenciador nao informa"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ],
+      "description": "0 em dia; 1 ha pendencia, reboot ou metadados velhos"
+    }
+  }
+}
