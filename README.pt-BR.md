@@ -140,6 +140,32 @@ Os dois também funcionam sem menu, que é o que uma tarefa agendada precisa:
 ./menu.sh -r disk-space -t 20       # executa um direto
 ```
 
+### Rodar sem clonar
+
+Direto da web, como se faz com um instalador avulso:
+
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/Menu.ps1")))
+```
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/menu.sh | bash
+```
+
+Nesse modo não existe arquivo em disco, então o menu **pergunta onde colocar o
+toolkit** antes de baixar qualquer coisa — pasta temporária se for só para
+experimentar, ou permanente se quiser manter. Nada é gravado antes da resposta.
+
+Para pular a pergunta (uso não interativo), diga o destino de antemão:
+
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/Menu.ps1"))) -Destination Temp
+```
+
+```bash
+DESTINATION=temp curl -fsSL https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/menu.sh | bash
+```
+
 ## Instalação
 
 ```bash

@@ -139,6 +139,33 @@ Both also work without the menu, which is what a scheduled task needs:
 ./menu.sh -r disk-space -t 20       # run one directly
 ```
 
+### Run it without cloning
+
+Straight from the web, the way you would run a one-off installer:
+
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/Menu.ps1")))
+```
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/menu.sh | bash
+```
+
+There is no file on disk in that mode, so the menu asks **where to put the
+toolkit** before downloading anything — a temporary folder if you are just
+trying it out, or a permanent one if you want to keep it. Nothing is written
+until you answer.
+
+To skip the question (unattended use), name the destination up front:
+
+```powershell
+& ([scriptblock]::Create((irm "https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/Menu.ps1"))) -Destination Temp
+```
+
+```bash
+DESTINATION=temp curl -fsSL https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/menu.sh | bash
+```
+
 ## Install
 
 ```bash
