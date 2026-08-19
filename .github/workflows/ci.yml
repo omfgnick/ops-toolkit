@@ -270,7 +270,10 @@ jobs:
               $skipped += $name
               continue
             }
-            $extra = if ($argsFor.ContainsKey($name)) { $argsFor[$name] } else { @() }
+            # Atribuir com if/else desenrola o array vazio e deixa $extra nulo,
+            # e ai o splat manda um posicional 0 que cai em -Hours. Array sempre.
+            $extra = @()
+            if ($argsFor.ContainsKey($name)) { $extra = @($argsFor[$name]) }
 
             $raw = & $f.FullName @extra -AsJson 2>$null | Out-String
             try { $null = $raw | ConvertFrom-Json }
