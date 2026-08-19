@@ -248,20 +248,38 @@ jobs:
 
       # Descobre quem declara -AsJson em vez de manter lista fixa: assim um
       # script novo entra sozinho, e a ausencia num script antigo nao vira
-      # falha de CI por algo que ele nunca prometeu.
+      # falha por algo que ele nunca prometeu. Quem exige parametro obrigatorio
+      # fica de fora da execucao automatica - Repair-CommonIssues pede -Repair
+      # de proposito, e um script de reparo sem alvo nao deveria rodar.
       - name: Conferir a saida JSON
         shell: pwsh
         run: |
-          $withJson = Get-ChildItem ./powershell -Filter *.ps1 |
-            Where-Object { (Get-Content $_.FullName -Raw) -match '\[switch\]\$AsJson' }
-          if (-not $withJson) { throw 'Nenhum script declara -AsJson; a descoberta quebrou.' }
-          foreach ($f in $withJson) {
+          $checked = 0
+          $skipped = @()
+          foreach ($f in Get-ChildItem ./powershell -Filter *.ps1) {
+            $text = Get-Content $f.FullName -Raw
+            if ($text -notmatch '\[switch\]\$AsJson') { continue }
+
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile(
+              $f.FullName, [ref]$null, [ref]$null)
+            $mandatory = $ast.ParamBlock.Parameters | Where-Object {
+              $_.Attributes.NamedArguments |
+                Where-Object { $_.ArgumentName -eq 'Mandatory' -and "$($_.Argument)" -ne '$false' }
+            }
+            if ($mandatory) {
+              $skipped += "$($f.BaseName) (exige -$($mandatory[0].Name.VariablePath))"
+              continue
+            }
+
             $raw = & $f.FullName -AsJson 2>$null | Out-String
             try { $null = $raw | ConvertFrom-Json }
             catch { Write-Host "::error::$($f.BaseName) devolveu JSON invalido"; throw }
             Write-Host "OK  $($f.BaseName)"
+            $checked++
           }
-          Write-Host "$($withJson.Count) script(s) com -AsJson conferidos."
+          foreach ($s in $skipped) { Write-Host "--  $s" }
+          if ($checked -lt 2) { throw "Só $checked script(s) conferidos; a descoberta quebrou." }
+          Write-Host "$checked com JSON validado, $($skipped.Count) fora da execucao automatica."
 
       # O debloat NUNCA é aplicado no CI. Só o plano, que não altera nada.
       - name: Plano do debloat (sem aplicar)
