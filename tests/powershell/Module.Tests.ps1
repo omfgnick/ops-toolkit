@@ -32,7 +32,7 @@ Describe 'Manifesto' {
 
     It 'exporta exatamente as funções que o módulo define' {
         $declared = (Import-PowerShellDataFile -Path $script:Manifest).FunctionsToExport
-        $exported = (Get-Command -Module OpsToolkit).Name
+        $exported = (Get-Command -Module OpsToolkit -CommandType Function).Name
         ($declared | Sort-Object) | Should -Be ($exported | Sort-Object)
     }
 }
@@ -53,7 +53,7 @@ Describe 'Funções do módulo' {
     }
 
     It 'toda função exportada tem ajuda com sinopse' {
-        foreach ($fn in (Get-Command -Module OpsToolkit)) {
+        foreach ($fn in (Get-Command -Module OpsToolkit -CommandType Function)) {
             $synopsis = (Get-Help $fn.Name).Synopsis
             $synopsis | Should -Not -BeNullOrEmpty -Because "$($fn.Name) precisa de .SYNOPSIS"
         }

@@ -96,9 +96,9 @@ function Test-ServiceHealth {
     [CmdletBinding()] param()
     & (Join-Path $script:ScriptRoot 'Test-ServiceHealth.ps1') @args
 }
-function Test-Endpoints { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Test-Endpoints.ps1') @args }
-function Get-OpenPorts { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-OpenPorts.ps1') @args }
-function Get-EventLogErrors { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-EventLogErrors.ps1') @args }
+function Test-Endpoint { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Test-Endpoints.ps1') @args }
+function Get-OpenPort { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-OpenPorts.ps1') @args }
+function Get-EventLogError { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-EventLogErrors.ps1') @args }
 function Get-TLSCertExpiry { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-TLSCertExpiry.ps1') @args }
 function New-UptimeReport {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Forwards -WhatIf to the wrapped .ps1, which implements ShouldProcess')]
@@ -110,7 +110,7 @@ function Invoke-LogRotation {
     [CmdletBinding()] param()
     & (Join-Path $script:ScriptRoot 'Rotate-Logs.ps1') @args
 }
-function Clear-TempFiles {
+function Clear-TempFile {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Forwards -WhatIf to the wrapped .ps1, which implements ShouldProcess')]
     [CmdletBinding()] param()
     & (Join-Path $script:ScriptRoot 'Cleanup-TempFiles.ps1') @args
@@ -133,14 +133,29 @@ Export-ModuleMember -Function @(
     'Invoke-OpsScript'
     'Get-DiskSpaceReport'
     'Test-ServiceHealth'
-    'Test-Endpoints'
-    'Get-OpenPorts'
-    'Get-EventLogErrors'
+    'Test-Endpoint'
+    'Get-OpenPort'
+    'Get-EventLogError'
     'Get-TLSCertExpiry'
     'New-UptimeReport'
     'Invoke-LogRotation'
-    'Clear-TempFiles'
+    'Clear-TempFile'
     'Get-LocalUserAudit'
     'Backup-Folder'
     'Invoke-BackupRetention'
+)
+
+# Os nomes no plural batem com os arquivos .ps1 e são o que quem já usa o
+# toolkit espera digitar; as funções seguem a convenção do PowerShell
+# (substantivo singular), e os aliases mantêm as duas formas funcionando.
+Set-Alias -Name Test-Endpoints -Value Test-Endpoint
+Set-Alias -Name Get-OpenPorts -Value Get-OpenPort
+Set-Alias -Name Get-EventLogErrors -Value Get-EventLogError
+Set-Alias -Name Cleanup-TempFiles -Value Clear-TempFile
+
+Export-ModuleMember -Alias @(
+    'Test-Endpoints'
+    'Get-OpenPorts'
+    'Get-EventLogErrors'
+    'Cleanup-TempFiles'
 )

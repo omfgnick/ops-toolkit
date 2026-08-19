@@ -12,20 +12,20 @@
         'Invoke-OpsScript'
         'Get-DiskSpaceReport'
         'Test-ServiceHealth'
-        'Test-Endpoints'
-        'Get-OpenPorts'
-        'Get-EventLogErrors'
+        'Test-Endpoint'
+        'Get-OpenPort'
+        'Get-EventLogError'
         'Get-TLSCertExpiry'
         'New-UptimeReport'
         'Invoke-LogRotation'
-        'Clear-TempFiles'
+        'Clear-TempFile'
         'Get-LocalUserAudit'
         'Backup-Folder'
         'Invoke-BackupRetention'
     )
     CmdletsToExport   = @()
     VariablesToExport = @()
-    AliasesToExport   = @()
+    AliasesToExport   = @('Test-Endpoints', 'Get-OpenPorts', 'Get-EventLogErrors', 'Cleanup-TempFiles')
 
     PrivateData       = @{
         PSData = @{
