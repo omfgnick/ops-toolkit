@@ -118,7 +118,7 @@ function Clear-TempFile {
 function Get-IncidentTriage { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-IncidentTriage.ps1') @args }
 function Test-NetworkPath { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Test-NetworkPath.ps1') @args }
 function Get-SecurityAudit { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-SecurityAudit.ps1') @args }
-function Repair-CommonIssues { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Repair-CommonIssues.ps1') @args }
+function Invoke-CommonRepair { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Repair-CommonIssues.ps1') @args }
 function Get-LocalUserAudit { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Audit-LocalUsers.ps1') @args }
 function Backup-Folder {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Forwards -WhatIf to the wrapped .ps1, which implements ShouldProcess')]
@@ -148,7 +148,7 @@ Export-ModuleMember -Function @(
     'Get-IncidentTriage'
     'Test-NetworkPath'
     'Get-SecurityAudit'
-    'Repair-CommonIssues'
+    'Invoke-CommonRepair'
     'Backup-Folder'
     'Invoke-BackupRetention'
 )
@@ -160,10 +160,12 @@ Set-Alias -Name Test-Endpoints -Value Test-Endpoint
 Set-Alias -Name Get-OpenPorts -Value Get-OpenPort
 Set-Alias -Name Get-EventLogErrors -Value Get-EventLogError
 Set-Alias -Name Cleanup-TempFiles -Value Clear-TempFile
+Set-Alias -Name Repair-CommonIssues -Value Invoke-CommonRepair
 
 Export-ModuleMember -Alias @(
     'Test-Endpoints'
     'Get-OpenPorts'
     'Get-EventLogErrors'
     'Cleanup-TempFiles'
+    'Repair-CommonIssues'
 )

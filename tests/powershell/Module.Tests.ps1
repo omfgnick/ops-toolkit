@@ -31,9 +31,24 @@ Describe 'Manifesto' {
     }
 
     It 'exporta exatamente as funções que o módulo define' {
+        # Comparar o manifesto com Get-Command não prova nada: o manifesto é
+        # quem decide o que o Get-Command devolve, então uma função definida no
+        # .psm1 e esquecida no manifesto passava batido — foi o que aconteceu
+        # com quatro delas. A comparação real é contra o arquivo de código.
+        $psm1 = Get-Content (Join-Path $script:Root 'powershell/OpsToolkit.psm1') -Raw
+        $defined = [regex]::Matches($psm1, '(?m)^function ([A-Za-z-]+) ?\{') |
+            ForEach-Object { $_.Groups[1].Value }
         $declared = (Import-PowerShellDataFile -Path $script:Manifest).FunctionsToExport
-        $exported = (Get-Command -Module OpsToolkit -CommandType Function).Name
-        ($declared | Sort-Object) | Should -Be ($exported | Sort-Object)
+
+        ($defined | Sort-Object) | Should -Be ($declared | Sort-Object) -Because 'toda função do .psm1 precisa estar no manifesto'
+    }
+
+    It 'toda função declarada está realmente disponível após importar' {
+        $declared = (Import-PowerShellDataFile -Path $script:Manifest).FunctionsToExport
+        $available = (Get-Command -Module OpsToolkit -CommandType Function).Name
+        foreach ($fn in $declared) {
+            $available | Should -Contain $fn
+        }
     }
 }
 
