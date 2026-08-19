@@ -13,7 +13,7 @@ setup() {
 }
 
 # Scripts que devem produzir relatório mesmo quando tudo dá errado
-DEGRADABLE="incident-triage disk-space inventory audit-hardening net-diagnose"
+DEGRADABLE="incident-triage disk-space inventory audit-hardening net-diagnose pending-updates"
 
 @test "produzem saida com PATH reduzido (ferramentas ausentes)" {
   for s in $DEGRADABLE; do

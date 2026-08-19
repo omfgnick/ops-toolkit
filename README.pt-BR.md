@@ -243,6 +243,7 @@ As quebras de linha são impostas pelo `.gitattributes`: `.sh` sempre em **LF**
 | `Rotate-Logs.ps1` | Rotaciona e compacta arquivos de log |
 | `Cleanup-TempFiles.ps1` | Limpa diretórios temporários |
 | `Audit-LocalUsers.ps1` | Contas locais, grupos e política de senha |
+| `Get-PendingUpdate.ps1` | Atualizações do Windows pendentes, upgrades do winget e reboot pendente |
 | `Get-IncidentTriage.ps1` | Retrato da máquina em um comando, para abrir o atendimento |
 | `Test-NetworkPath.ps1` | Perda/latência de ping e checagem de portas TCP, para monitorar links |
 | `Get-SecurityAudit.ps1` | Revisão de segurança somente leitura: contas, firewall, SMBv1, RDP |
@@ -284,6 +285,7 @@ Referência completa: [docs/powershell.pt-BR.md](docs/powershell.pt-BR.md)
 | `metrics-collector.sh` | Roda os scripts de relatório e emite um JSON único, ou métricas Prometheus para o node_exporter |
 | `backup-verify.sh` | Backup que só é considerado bom depois de restaurado e conferido por hash |
 | `inventory.sh` | Inventário da máquina: identificação, SO, CPU, discos, rede, pacotes |
+| `pending-updates.sh` | Atualizações pendentes e de segurança, idade da lista de pacotes, reboot pendente |
 
 Referência completa: [docs/bash.pt-BR.md](docs/bash.pt-BR.md)
 
