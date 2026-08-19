@@ -10,6 +10,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Vale para todos os jobs: sem isto o apt pode parar esperando um prompt que
+# ninguém vai responder, e o job fica pendurado até o timeout. Já aconteceu duas
+# vezes aqui — uma no shellcheck, outra na validação de schema.
+env:
+  DEBIAN_FRONTEND: noninteractive
+
 jobs:
   bash:
     name: Bash — shellcheck + sintaxe
