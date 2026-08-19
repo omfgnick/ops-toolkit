@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/support-bundle.schema.json",
+  "title": "support-bundle.sh --json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "archive",
+    "host",
+    "size_bytes",
+    "logs_included",
+    "items"
+  ],
+  "properties": {
+    "archive": {
+      "type": "string"
+    },
+    "host": {
+      "type": "string"
+    },
+    "size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "logs_included": {
+      "type": "boolean"
+    },
+    "items": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

@@ -230,6 +230,7 @@ As quebras de linha são impostas pelo `.gitattributes`: `.sh` sempre em **LF**
 | `Get-IncidentTriage.ps1` | Retrato da máquina em um comando, para abrir o atendimento |
 | `Test-NetworkPath.ps1` | Perda/latência de ping e checagem de portas TCP, para monitorar links |
 | `Get-SecurityAudit.ps1` | Revisão de segurança somente leitura: contas, firewall, SMBv1, RDP |
+| `Repair-CommonIssues.ps1` | Os reparos repetidos do helpdesk: spooler, Windows Update, rede, caches |
 
 ### Como módulo PowerShell
 
@@ -262,6 +263,8 @@ Referência completa: [docs/powershell.pt-BR.md](docs/powershell.pt-BR.md)
 | `incident-triage.sh` | Retrato da máquina em um comando, para abrir o atendimento |
 | `net-monitor.sh` | Perda/latência de ping e checagem de portas TCP, para monitorar links |
 | `audit-hardening.sh` | Revisão de segurança somente leitura: contas, sudo, SSH, permissões |
+| `support-bundle.sh` | Junta estado, logs e relatórios num arquivo só para anexar no chamado |
+| `net-diagnose.sh` | Percorre interface → gateway → DNS → internet e aponta a primeira falha |
 | `metrics-collector.sh` | Roda os scripts de relatório e emite um JSON único, ou métricas Prometheus para o node_exporter |
 | `backup-verify.sh` | Backup que só é considerado bom depois de restaurado e conferido por hash |
 | `inventory.sh` | Inventário da máquina: identificação, SO, CPU, discos, rede, pacotes |
