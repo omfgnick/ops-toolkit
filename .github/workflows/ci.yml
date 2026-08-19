@@ -386,6 +386,12 @@ jobs:
           done
           exit $fail
 
+      # As referencias em docs/ sao geradas a partir do cabecalho dos scripts.
+      # Sem este check elas voltam a divergir, que e como o "full reference" do
+      # Bash passou a documentar 2 dos 16 scripts sem ninguem notar.
+      - name: docs/ em dia com os cabecalhos
+        run: ./tools/gen-docs.sh -c
+
       - name: Garantir LF nos scripts shell
         run: |
           bad=$(find bash -name '*.sh' -exec grep -lU $'\r' {} + || true)
