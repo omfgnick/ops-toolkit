@@ -172,6 +172,84 @@ jobs:
           if ($r.FailedCount -gt 0) { throw "$($r.FailedCount) teste(s) falharam." }
           Write-Host "Pester: $($r.PassedCount) teste(s) passaram."
 
+  windows:
+    name: Windows — execução real
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      # Até aqui o CI só sabia dizer "compila e passa no analyzer". Este job é o
+      # que permite dizer "roda": os scripts somente-leitura são executados de
+      # fato, num Windows de verdade.
+      - name: Pester
+        shell: pwsh
+        env:
+          PESTER_VERSION: 5.7.1
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -RequiredVersion $env:PESTER_VERSION -Scope CurrentUser -Force -SkipPublisherCheck
+          Import-Module Pester -RequiredVersion $env:PESTER_VERSION
+          $r = Invoke-Pester -Path ./tests/powershell -PassThru -Output Detailed
+          if ($r.FailedCount -gt 0) { throw "$($r.FailedCount) teste(s) falharam." }
+
+      # Somente-leitura, executados de verdade. Um código de saída 1 aqui é
+      # achado (disco cheio, serviço parado), não defeito — o que interessa é
+      # não estourar exceção e devolver saída.
+      - name: Rodar os scripts de leitura
+        shell: pwsh
+        run: |
+          $readOnly = @(
+            'Get-DiskSpaceReport', 'Get-OpenPorts', 'Get-EventLogErrors',
+            'New-UptimeReport', 'Audit-LocalUsers', 'Get-IncidentTriage',
+            'Get-SecurityAudit'
+          )
+          $failed = @()
+          foreach ($name in $readOnly) {
+            Write-Host "--- $name"
+            try {
+              $out = & "./powershell/$name.ps1" 2>&1 | Out-String
+              if ([string]::IsNullOrWhiteSpace($out)) { $failed += "$name : não imprimiu nada" }
+              else { Write-Host ($out -split "`n" | Select-Object -First 3 | Out-String) }
+            }
+            catch {
+              $failed += "$name : $($_.Exception.Message)"
+            }
+          }
+          if ($failed) { $failed | ForEach-Object { Write-Host "::error::$_" }; throw "$($failed.Count) script(s) falharam." }
+          Write-Host "$($readOnly.Count) script(s) rodaram e produziram saída."
+
+      # O JSON tem de ser válido no Windows também, não só no schema em Linux.
+      - name: Conferir a saída JSON
+        shell: pwsh
+        run: |
+          foreach ($name in 'Get-DiskSpaceReport', 'Get-IncidentTriage', 'Get-SecurityAudit') {
+            $raw = & "./powershell/$name.ps1" -AsJson 2>$null | Out-String
+            try { $null = $raw | ConvertFrom-Json }
+            catch { Write-Host "::error::$name devolveu JSON inválido"; throw }
+            Write-Host "OK  $name"
+          }
+
+      # O debloat NUNCA é aplicado no CI. Só o plano, que não altera nada.
+      - name: Plano do debloat (sem aplicar)
+        shell: pwsh
+        run: |
+          foreach ($preset in 'Minimal', 'Recommended', 'Aggressive') {
+            $plan = & ./debloat/Invoke-Debloat.ps1 -Preset $preset -AsJson | ConvertFrom-Json
+            if ($plan.applied) { throw 'O plano relatou applied=true sem -Apply.' }
+            Write-Host "$preset : $($plan.actions.Count) ação(ões)"
+          }
+
+      # -WhatIf tem de percorrer o caminho de aplicação sem mudar nada.
+      - name: -WhatIf não altera o sistema
+        shell: pwsh
+        run: |
+          $before = (Get-AppxPackage | Measure-Object).Count
+          & ./debloat/Invoke-Debloat.ps1 -Preset Minimal -Apply -WhatIf -NoRestorePoint | Out-Null
+          $after = (Get-AppxPackage | Measure-Object).Count
+          if ($before -ne $after) { throw "-WhatIf removeu pacotes: $before -> $after" }
+          Write-Host "-WhatIf preservou os $after pacote(s) instalados."
+
   format:
     name: Formatação (shfmt)
     runs-on: ubuntu-latest
