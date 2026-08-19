@@ -256,7 +256,7 @@ jobs:
         shell: pwsh
         run: |
           $argsFor = @{
-            'Test-NetworkPath'    = @('-Target', '127.0.0.1')
+            'Test-NetworkPath'    = @{ Target = '127.0.0.1' }
             'Repair-CommonIssues' = $null   # exige -Repair: reparo sem alvo nao roda
           }
 
@@ -270,10 +270,12 @@ jobs:
               $skipped += $name
               continue
             }
-            # Atribuir com if/else desenrola o array vazio e deixa $extra nulo,
-            # e ai o splat manda um posicional 0 que cai em -Hours. Array sempre.
-            $extra = @()
-            if ($argsFor.ContainsKey($name)) { $extra = @($argsFor[$name]) }
+            # Hashtable, nao array: splat de array passa tudo como posicional,
+            # entao '-Target' virava o valor da posicao 0 e o IP ficava sem lugar.
+            # E atribuir com if/else desenrola o vazio e deixa $extra nulo, que o
+            # splat manda como posicional 0 e cai em -Hours.
+            $extra = @{}
+            if ($argsFor.ContainsKey($name)) { $extra = $argsFor[$name] }
 
             $raw = & $f.FullName @extra -AsJson 2>$null | Out-String
             try { $null = $raw | ConvertFrom-Json }
