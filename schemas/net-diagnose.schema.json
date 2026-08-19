@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/net-diagnose.schema.json",
+  "title": "net-diagnose.sh --json",
+  "description": "Camadas de rede verificadas em ordem, da interface até a internet.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "failures",
+    "proxy",
+    "steps"
+  ],
+  "properties": {
+    "failures": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "proxy": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Proxy do ambiente, se houver"
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step",
+          "ok",
+          "detail"
+        ],
+        "properties": {
+          "step": {
+            "enum": [
+              "interface",
+              "gateway",
+              "dns",
+              "internet",
+              "https"
+            ]
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

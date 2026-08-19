@@ -51,6 +51,13 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Windows-only: this script drives Windows components. Say so plainly instead of
+# failing later with an exception from a cmdlet that does not exist elsewhere.
+if ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows) {
+    Write-Error 'This script only runs on Windows.'
+    exit 2
+}
+
 # Thresholds that decide whether the exit code signals a problem.
 $LoadPerCoreLimit = 1.0
 $MemoryUsedLimit = 90

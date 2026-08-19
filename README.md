@@ -230,6 +230,7 @@ breaks the shebang on Linux), `.ps1` is **CRLF**. CI fails if that drifts.
 | `Get-IncidentTriage.ps1` | One-shot machine snapshot for the start of a ticket |
 | `Test-NetworkPath.ps1` | Ping loss/latency and TCP port checks for link monitoring |
 | `Get-SecurityAudit.ps1` | Read-only security review: accounts, firewall, SMBv1, RDP |
+| `Repair-CommonIssues.ps1` | The repeated helpdesk fixes: spooler, Windows Update, network, caches |
 
 ### As a PowerShell module
 
@@ -262,6 +263,8 @@ Full reference: [docs/powershell.en.md](docs/powershell.en.md)
 | `incident-triage.sh` | One-shot machine snapshot for the start of a ticket |
 | `net-monitor.sh` | Ping loss/latency and TCP port checks for link monitoring |
 | `audit-hardening.sh` | Read-only security review: accounts, sudo, SSH, file modes |
+| `support-bundle.sh` | Collects state, logs and reports into one archive for the ticket |
+| `net-diagnose.sh` | Walks interface → gateway → DNS → internet and names the first break |
 | `metrics-collector.sh` | Runs the report scripts and emits one JSON, or Prometheus metrics for node_exporter |
 | `backup-verify.sh` | Backup that is only trusted after being restored and checksummed |
 | `inventory.sh` | Machine inventory: identity, OS, CPU, disks, network, packages |
