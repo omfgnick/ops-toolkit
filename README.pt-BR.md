@@ -113,6 +113,33 @@ ops_toolkit_up 0
 ops_toolkit_collect_timestamp_seconds 1787091917
 ```
 
+## Menu interativo
+
+Se preferir escolher de uma lista a decorar nomes e opções:
+
+```bash
+./menu.sh
+```
+
+```powershell
+.\Menu.ps1
+```
+
+A lista é montada a partir dos próprios scripts, então um script novo aparece
+sem mexer no menu — e a descrição vem do mesmo cabeçalho que alimenta o
+`--help`, de modo que as duas não podem divergir.
+
+Digite o número para executar; o que vier depois do número é repassado direto
+(`7 -t 20`). O menu do PowerShell vai além e pergunta cada parâmetro do script
+escolhido.
+
+Os dois também funcionam sem menu, que é o que uma tarefa agendada precisa:
+
+```bash
+./menu.sh -l                        # lista os nomes
+./menu.sh -r disk-space -t 20       # executa um direto
+```
+
 ## Instalação
 
 ```bash
