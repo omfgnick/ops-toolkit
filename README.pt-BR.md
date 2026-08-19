@@ -113,6 +113,21 @@ ops_toolkit_up 0
 ops_toolkit_collect_timestamp_seconds 1787091917
 ```
 
+## Debloat (Windows)
+
+Separado de tudo acima, em [`debloat/`](debloat/), e propositalmente fora do menu
+principal: o resto do toolkit relata o estado de uma máquina, esse altera.
+
+```powershell
+.\debloat\Invoke-Debloat.ps1                     # mostra o plano, não altera nada
+.\debloat\Invoke-Debloat.ps1 -Profile Recommended -Apply
+```
+
+Nada é aplicado sem `-Apply`; um ponto de restauração é criado antes; cada chave
+de registro é exportada antes de ser tocada e um script de reversão é gerado.
+Veja o [debloat/README.md](debloat/README.md), inclusive a ressalva sobre o que o
+CI consegue e o que não consegue verificar ali.
+
 ## Menu interativo
 
 Se preferir escolher de uma lista a decorar nomes e opções:

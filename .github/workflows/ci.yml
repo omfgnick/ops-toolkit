@@ -66,7 +66,7 @@ jobs:
         shell: pwsh
         run: |
           $settings = Join-Path $PWD 'PSScriptAnalyzerSettings.psd1'
-          $results = Invoke-ScriptAnalyzer -Path ./powershell -Recurse -Settings $settings
+          $results = Invoke-ScriptAnalyzer -Path ./powershell, ./debloat -Recurse -Settings $settings
           if ($results) { $results | Format-Table -AutoSize RuleName, Severity, ScriptName, Line, Message }
           $blocking = @($results | Where-Object { $_.Severity -in 'Error', 'Warning' })
           Write-Host "Apontamentos: Error/Warning = $($blocking.Count), total = $(@($results).Count)"
@@ -76,7 +76,7 @@ jobs:
         shell: pwsh
         run: |
           $failed = $false
-          Get-ChildItem ./powershell -Recurse -Filter *.ps1 | ForEach-Object {
+          Get-ChildItem ./powershell, ./debloat -Recurse -Filter *.ps1 | ForEach-Object {
             $errors = $null
             [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors) | Out-Null
             if ($errors) {
