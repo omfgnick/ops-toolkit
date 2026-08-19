@@ -1,6 +1,6 @@
 @{
     RootModule        = 'OpsToolkit.psm1'
-    ModuleVersion     = '1.0.0'
+    ModuleVersion     = '1.1.0'
     GUID              = 'd6f2b0c4-8a1e-4c33-9f77-2b5e6a91c0d4'
     Author            = 'Nicolas Mesquita Fernandes'
     Description       = 'Operations scripts for infrastructure and incident work: health checks, reporting, backup and auditing.'

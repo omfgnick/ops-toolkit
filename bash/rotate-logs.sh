@@ -33,7 +33,7 @@ usage() {
   awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 }
 
-readonly OPS_TOOLKIT_VERSION="1.0.0"
+readonly OPS_TOOLKIT_VERSION="1.1.0"
 
 # --version / --help before getopts: getopts only understands single-letter
 # options, and these two are what people reach for by reflex.

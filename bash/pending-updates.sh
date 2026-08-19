@@ -40,7 +40,7 @@ usage() {
   awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 }
 
-readonly OPS_TOOLKIT_VERSION="1.0.0"
+readonly OPS_TOOLKIT_VERSION="1.1.0"
 
 case "${1:-}" in
   --version)
