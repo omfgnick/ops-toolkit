@@ -144,6 +144,19 @@ Both also work without the menu, which is what a scheduled task needs:
 Straight from the web, the way you would run a one-off installer:
 
 ```powershell
+& ([scriptblock]::Create((irm "https://ops.omfgnickss.workers.dev")))
+```
+
+```bash
+curl -fsSL https://ops.omfgnickss.workers.dev/sh | bash
+```
+
+That short address is a Cloudflare Worker that serves the launcher straight from
+this repository — it is only a shortener, and `X-Source` on the response names
+the exact file. If you would rather see where the code comes from before running
+it, use the raw URL instead; it does the same thing:
+
+```powershell
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/Menu.ps1")))
 ```
 

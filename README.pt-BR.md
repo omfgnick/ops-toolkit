@@ -145,6 +145,19 @@ Os dois também funcionam sem menu, que é o que uma tarefa agendada precisa:
 Direto da web, como se faz com um instalador avulso:
 
 ```powershell
+& ([scriptblock]::Create((irm "https://ops.omfgnickss.workers.dev")))
+```
+
+```bash
+curl -fsSL https://ops.omfgnickss.workers.dev/sh | bash
+```
+
+Esse endereço curto é um Worker da Cloudflare que serve o launcher direto deste
+repositório — ele é só um encurtador, e o cabeçalho `X-Source` da resposta diz
+qual arquivo exatamente. Se preferir ver de onde o código vem antes de executar,
+use a URL raw; faz a mesma coisa:
+
+```powershell
 & ([scriptblock]::Create((irm "https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/Menu.ps1")))
 ```
 
