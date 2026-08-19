@@ -19,13 +19,17 @@
         'New-UptimeReport'
         'Invoke-LogRotation'
         'Clear-TempFile'
+        'Get-IncidentTriage'
+        'Test-NetworkPath'
+        'Get-SecurityAudit'
+        'Invoke-CommonRepair'
         'Get-LocalUserAudit'
         'Backup-Folder'
         'Invoke-BackupRetention'
     )
     CmdletsToExport   = @()
     VariablesToExport = @()
-    AliasesToExport   = @('Test-Endpoints', 'Get-OpenPorts', 'Get-EventLogErrors', 'Cleanup-TempFiles')
+    AliasesToExport   = @('Test-Endpoints', 'Get-OpenPorts', 'Get-EventLogErrors', 'Cleanup-TempFiles', 'Repair-CommonIssues')
 
     PrivateData       = @{
         PSData = @{

@@ -86,6 +86,8 @@ printf 'PermitRootLogin yes\nPasswordAuthentication no\n' >"$WORK/sshd_config"
 SSHD_CONFIG="$WORK/sshd_config" run_json audit-hardening || true
 
 run_json inventory || true
+run_json net-diagnose || true
+run_json support-bundle -o "$WORK/bundle.tar.gz" || true
 
 mkdir -p "$WORK/logs"
 echo conteudo >"$WORK/logs/velho.log"
