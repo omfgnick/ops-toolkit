@@ -162,6 +162,21 @@ As quebras de linha são impostas pelo `.gitattributes`: `.sh` sempre em **LF**
 | `Cleanup-TempFiles.ps1` | Limpa diretórios temporários |
 | `Audit-LocalUsers.ps1` | Contas locais, grupos e política de senha |
 
+### Como módulo PowerShell
+
+Os scripts continuam standalone — copiar um `.ps1` solto para um servidor segue
+funcionando. Numa máquina com o toolkit inteiro, importar o módulo entrega os
+mesmos scripts como comandos, com autocompletar e `Get-Help`:
+
+```powershell
+Import-Module ./powershell/OpsToolkit.psd1
+Get-OpsToolkitCommand            # o que está disponível
+Get-DiskSpaceReport -ThresholdPercent 20
+```
+
+Os wrappers repassam todos os parâmetros sem tocar (inclusive `-WhatIf`), então
+o módulo não tem como se comportar diferente do arquivo que ele embrulha.
+
 Referência completa: [docs/powershell.pt-BR.md](docs/powershell.pt-BR.md)
 
 ## Bash
