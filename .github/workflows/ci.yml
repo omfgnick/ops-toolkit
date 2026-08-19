@@ -32,7 +32,8 @@ jobs:
           tar -xJf shellcheck.tar.xz --strip-components=1 "shellcheck-${SHELLCHECK_VERSION}/shellcheck"
           ./shellcheck --version
           # -S style: falha em qualquer apontamento, inclusive de estilo
-          find bash -name '*.sh' -print0 | xargs -0 ./shellcheck -S style
+          find bash tools tests -name '*.sh' -print0 | xargs -0 ./shellcheck -S style
+          ./shellcheck -S style ./*.sh
 
       - name: Sintaxe (bash -n)
         run: |
@@ -172,7 +173,7 @@ jobs:
       # Para corrigir localmente: shfmt -i 2 -ci -w bash/*.sh
       - name: shfmt
         run: |
-          docker run --rm -v "$PWD:/mnt" -w /mnt mvdan/shfmt:v3-alpine -i 2 -ci -d bash/
+          docker run --rm -v "$PWD:/mnt" -w /mnt mvdan/shfmt:v3-alpine -i 2 -ci -d bash/ tools/ menu.sh install.sh
 
   secrets:
     name: Segredos (gitleaks)
@@ -202,7 +203,7 @@ jobs:
       # a validação tentou executá-los.
       - name: Garantir que os scripts são executáveis
         run: |
-          bad=$(find bash -name '*.sh' ! -perm -u+x -print)
+          bad=$(find bash tools . -maxdepth 2 -name '*.sh' ! -perm -u+x -print)
           if [ -n "$bad" ]; then
             echo "::error::Sem bit de execução (use: git update-index --chmod=+x <arquivo>):"
             echo "$bad"; exit 1
