@@ -246,16 +246,22 @@ jobs:
           if ($failed) { $failed | ForEach-Object { Write-Host "::error::$_" }; throw "$($failed.Count) script(s) falharam." }
           Write-Host "$($cases.Count) script(s) com alvo rodaram."
 
-      # O JSON tem de ser válido no Windows também, não só no schema em Linux.
-      - name: Conferir a saída JSON
+      # Descobre quem declara -AsJson em vez de manter lista fixa: assim um
+      # script novo entra sozinho, e a ausencia num script antigo nao vira
+      # falha de CI por algo que ele nunca prometeu.
+      - name: Conferir a saida JSON
         shell: pwsh
         run: |
-          foreach ($name in 'Get-DiskSpaceReport', 'Get-IncidentTriage', 'Get-SecurityAudit') {
-            $raw = & "./powershell/$name.ps1" -AsJson 2>$null | Out-String
+          $withJson = Get-ChildItem ./powershell -Filter *.ps1 |
+            Where-Object { (Get-Content $_.FullName -Raw) -match '\[switch\]\$AsJson' }
+          if (-not $withJson) { throw 'Nenhum script declara -AsJson; a descoberta quebrou.' }
+          foreach ($f in $withJson) {
+            $raw = & $f.FullName -AsJson 2>$null | Out-String
             try { $null = $raw | ConvertFrom-Json }
-            catch { Write-Host "::error::$name devolveu JSON inválido"; throw }
-            Write-Host "OK  $name"
+            catch { Write-Host "::error::$($f.BaseName) devolveu JSON invalido"; throw }
+            Write-Host "OK  $($f.BaseName)"
           }
+          Write-Host "$($withJson.Count) script(s) com -AsJson conferidos."
 
       # O debloat NUNCA é aplicado no CI. Só o plano, que não altera nada.
       - name: Plano do debloat (sem aplicar)
