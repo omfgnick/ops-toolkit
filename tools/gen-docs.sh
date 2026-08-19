@@ -91,11 +91,14 @@ bash_summary() {
 
 # O bloco <# ... #> no topo de um script PowerShell, sem os delimitadores.
 ps_header() {
-  awk '
+  # Os .ps1 sao CRLF por politica do repositorio (o .gitattributes garante), e
+  # sem tirar o  a saida gerada no Windows difere da gerada no Linux em toda
+  # linha - o check do CI acusaria divergencia que nao existe.
+  tr -d '' <"$1" | awk '
     /^<#/ { inblock = 1; next }
     inblock && /^#>/ { exit }
     inblock { sub(/^    /, ""); print }
-  ' "$1" | trim_blank
+  ' | trim_blank
 }
 
 ps_summary() {
@@ -155,7 +158,7 @@ generate() {
         name="$(basename "$f")"
         echo "### \`$name\`"
         echo
-        echo "$(bash_summary "$f")"
+        bash_summary "$f"
         echo
         echo '```'
         bash_header "$f"
@@ -168,7 +171,7 @@ generate() {
         name="$(basename "$f")"
         echo "### \`$name\`"
         echo
-        echo "$(ps_summary "$f")"
+        ps_summary "$f"
         echo
         echo '```'
         ps_header "$f"

@@ -82,3 +82,16 @@ setup() {
     done < <(grep -o '](\([^)#]*\.md\)[^)]*)' "$f" | sed 's/](\([^)#]*\.md\).*/\1/')
   done
 }
+
+@test "a saida gerada nao carrega CR, venha de .sh ou de .ps1" {
+  # Os .ps1 sao CRLF por politica do repositorio. Sem tirar o \r na extracao, a
+  # saida gerada no Windows difere da gerada no Linux em toda linha, e o check
+  # do CI acusa divergencia que nao existe. Foi exatamente o que aconteceu.
+  for f in "$ROOT"/docs/*.md; do
+    run grep -cU $'\r' "$f"
+    [ "$status" -ne 0 ] || {
+      echo "$(basename "$f") tem $output linha(s) com CR"
+      return 1
+    }
+  done
+}
