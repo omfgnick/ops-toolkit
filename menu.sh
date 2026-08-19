@@ -10,7 +10,10 @@
 #   ./menu.sh                 # interactive menu
 #   ./menu.sh -l              # just list what is available, one per line
 #   ./menu.sh -r NAME [args]  # run one script directly, no menu
-#   bash <(curl -fsSL https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/menu.sh)
+#   curl -fsSL https://raw.githubusercontent.com/omfgnick/ops-toolkit/main/menu.sh | bash
+#
+# Run straight from the web, it asks where to put the toolkit before downloading
+# anything. Set DESTINATION=temp|keep|/some/path to skip the question.
 #
 # Options:
 #   -l           List the available scripts and exit
@@ -71,11 +74,89 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+REPO="https://github.com/omfgnick/ops-toolkit"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
 BASH_DIR="$HERE/bash"
+
+# Piped in ('curl ... | bash') there is no file on disk, so the scripts this
+# menu launches are nowhere near it. Fetch the repository first - after asking,
+# because downloading onto someone's machine is not a decision to make for them
+# in silence.
+if [ ! -d "$BASH_DIR" ]; then
+  TMP_PATH="${TMPDIR:-/tmp}/ops-toolkit"
+  KEEP_PATH="$HOME/ops-toolkit"
+
+  # Where to read the answer: with 'curl | bash' stdin is the script itself.
+  if [ -t 0 ]; then
+    ASK=/dev/stdin
+  elif (exec 3</dev/tty) 2>/dev/null; then
+    ASK=/dev/tty
+  else
+    ASK=""
+  fi
+
+  if [ -n "${DESTINATION:-}" ]; then
+    case "$DESTINATION" in
+      temp | Temp) TARGET="$TMP_PATH" ;;
+      keep | Keep) TARGET="$KEEP_PATH" ;;
+      *) TARGET="$DESTINATION" ;;
+    esac
+    echo "Destination: $TARGET"
+  elif [ -z "$ASK" ]; then
+    echo "ops-toolkit is not here and there is no terminal to ask where to put it." >&2
+    echo "Set DESTINATION=temp|keep|/some/path and run again." >&2
+    exit 2
+  else
+    echo
+    echo "ops-toolkit is not on this machine yet. Where should it go?"
+    echo
+    echo "   1  Temporary folder - just trying it out   $TMP_PATH"
+    echo "   2  Keep it - installs for real             $KEEP_PATH"
+    echo "   q  cancel"
+    echo
+    printf 'Choose: '
+    IFS= read -r where <"$ASK" || where=""
+    case "$where" in
+      1) TARGET="$TMP_PATH" ;;
+      2) TARGET="$KEEP_PATH" ;;
+      *)
+        echo "Cancelled - nothing was downloaded."
+        exit 0
+        ;;
+    esac
+  fi
+
+  if [ ! -d "$TARGET/bash" ]; then
+    command -v curl >/dev/null 2>&1 || {
+      echo "curl not found; needed to download the toolkit." >&2
+      exit 1
+    }
+    echo "Downloading ops-toolkit into $TARGET ..."
+    unpack="$(mktemp -d)"
+    if ! curl -fsSL "$REPO/archive/refs/heads/main.tar.gz" | tar -xz -C "$unpack"; then
+      echo "Could not download the toolkit." >&2
+      rm -rf "$unpack"
+      exit 1
+    fi
+    rm -rf "$TARGET"
+    mkdir -p "$(dirname "$TARGET")"
+    mv "$unpack/ops-toolkit-main" "$TARGET"
+    rm -rf "$unpack"
+    chmod +x "$TARGET"/bash/*.sh "$TARGET"/menu.sh 2>/dev/null || true
+  else
+    echo "Using the copy already in $TARGET"
+  fi
+
+  HERE="$TARGET"
+  BASH_DIR="$HERE/bash"
+  if [ "$TARGET" = "$TMP_PATH" ]; then
+    echo "This copy is in a temporary folder and the system may delete it."
+    echo "To keep it: git clone $REPO"
+  fi
+fi
+
 [ -d "$BASH_DIR" ] || {
   echo "Script directory not found: $BASH_DIR" >&2
-  echo "Run this from a clone of the repository." >&2
   exit 2
 }
 
