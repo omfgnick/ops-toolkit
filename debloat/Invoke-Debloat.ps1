@@ -24,7 +24,7 @@
 
     Run this on one machine and use it before rolling it anywhere.
 
-.PARAMETER Profile
+.PARAMETER Preset
     Minimal, Recommended or Aggressive. Default: Minimal.
 
 .PARAMETER Apply
@@ -55,18 +55,22 @@
     Shows what the Minimal profile would change. Changes nothing.
 
 .EXAMPLE
-    .\Invoke-Debloat.ps1 -Profile Recommended -Apply
+    .\Invoke-Debloat.ps1 -Preset Recommended -Apply
 
 .EXAMPLE
-    .\Invoke-Debloat.ps1 -Profile Aggressive -Skip svc.diagtrack, app.quickassist -Apply
+    .\Invoke-Debloat.ps1 -Preset Aggressive -Skip svc.diagtrack, app.quickassist -Apply
 
 .EXAMPLE
-    .\Invoke-Debloat.ps1 -Profile Recommended -Apply -WhatIf
+    .\Invoke-Debloat.ps1 -Preset Recommended -Apply -WhatIf
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(
+    # Chamado de -Preset e não -Profile porque $Preset é variável automática do
+    # PowerShell (caminho do perfil do shell) e um parâmetro com esse nome a
+    # sombreia. O alias mantém -Profile funcionando para quem digita por reflexo.
+    [Alias('Profile')]
     [ValidateSet('Minimal', 'Recommended', 'Aggressive')]
-    [string]$Profile = 'Minimal',
+    [string]$Preset = 'Minimal',
 
     [switch]$Apply,
     [string[]]$Only,
@@ -97,7 +101,7 @@ if (-not (Test-Path -LiteralPath $actionsFile)) {
 $catalog = Import-PowerShellDataFile -LiteralPath $actionsFile
 
 $rank = @{ Minimal = 1; Recommended = 2; Aggressive = 3 }
-$wanted = $rank[$Profile]
+$wanted = $rank[$Preset]
 
 # ---- Build the plan ----------------------------------------------------------
 $plan = [System.Collections.Generic.List[pscustomobject]]::new()
@@ -131,14 +135,14 @@ if (-not $Apply) {
     if ($AsJson) {
         [pscustomobject]@{
             mode    = 'plan'
-            profile = $Profile
+            profile = $Preset
             applied = $false
             actions = @($plan | Select-Object Id, Type, Summary, Risk, Reversible, Note)
         } | ConvertTo-Json -Depth 4
     }
     else {
         Write-Host ''
-        Write-Host "Debloat plan - profile: $Profile" -ForegroundColor Cyan
+        Write-Host "Debloat plan - preset: $Preset" -ForegroundColor Cyan
         Write-Host 'Nothing below has been changed. Add -Apply to carry it out.' -ForegroundColor DarkGray
         Write-Host ''
         foreach ($p in $plan) {
@@ -187,7 +191,7 @@ if (-not $NoRestorePoint) {
 
 $revert = [System.Collections.Generic.List[string]]::new()
 $revert.Add('# Undoes the changes made by Invoke-Debloat.ps1.')
-$revert.Add("# Generated $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), profile $Profile.")
+$revert.Add("# Generated $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), profile $Preset.")
 $revert.Add('# Registry values come back from the .reg exports next to this file.')
 $revert.Add('')
 
@@ -316,7 +320,7 @@ $failed = @($plan | Where-Object { $_.Status -eq 'failed' }).Count
 if ($AsJson) {
     [pscustomobject]@{
         mode        = 'apply'
-        profile     = $Profile
+        profile     = $Preset
         applied     = $true
         backup_path = $BackupPath
         revert      = $revertFile
@@ -327,7 +331,7 @@ if ($AsJson) {
 }
 else {
     Write-Host ''
-    Write-Host "Debloat - profile: $Profile" -ForegroundColor Cyan
+    Write-Host "Debloat - preset: $Preset" -ForegroundColor Cyan
     Write-Host ''
     foreach ($p in $plan) {
         Write-Host ('  [{0,-7}] {1,-26} {2}' -f $p.Status, $p.Id, $p.Detail)

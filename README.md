@@ -120,7 +120,7 @@ changes it.
 
 ```powershell
 .\debloat\Invoke-Debloat.ps1                     # prints the plan, changes nothing
-.\debloat\Invoke-Debloat.ps1 -Profile Recommended -Apply
+.\debloat\Invoke-Debloat.ps1 -Preset Recommended -Apply
 ```
 
 Nothing is applied without `-Apply`; a restore point is taken first; every

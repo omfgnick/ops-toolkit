@@ -120,7 +120,7 @@ principal: o resto do toolkit relata o estado de uma máquina, esse altera.
 
 ```powershell
 .\debloat\Invoke-Debloat.ps1                     # mostra o plano, não altera nada
-.\debloat\Invoke-Debloat.ps1 -Profile Recommended -Apply
+.\debloat\Invoke-Debloat.ps1 -Preset Recommended -Apply
 ```
 
 Nada é aplicado sem `-Apply`; um ponto de restauração é criado antes; cada chave

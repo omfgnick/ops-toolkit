@@ -18,8 +18,8 @@ It works on any machine, including Linux — the plan is just a data file being
 read, so you can review it before going near a workstation.
 
 ```powershell
-.\Invoke-Debloat.ps1 -Profile Recommended          # see more
-.\Invoke-Debloat.ps1 -Profile Recommended -Apply   # do it
+.\Invoke-Debloat.ps1 -Preset Recommended          # see more
+.\Invoke-Debloat.ps1 -Preset Recommended -Apply   # do it
 ```
 
 ## Profiles
@@ -76,7 +76,7 @@ Microsoft Store, and the script lists which ones by name. Everything else
 Each entry has an id, shown in the plan:
 
 ```powershell
-.\Invoke-Debloat.ps1 -Profile Aggressive -Skip svc.diagtrack, app.quickassist -Apply
+.\Invoke-Debloat.ps1 -Preset Aggressive -Skip svc.diagtrack, app.quickassist -Apply
 .\Invoke-Debloat.ps1 -Only app.solitaire, app.bing.news -Apply
 ```
 

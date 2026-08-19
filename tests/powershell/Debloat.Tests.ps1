@@ -113,9 +113,9 @@ Describe 'Comportamento do script' {
     }
 
     It 'os perfis são cumulativos' {
-        $min = (& $script:Script -Profile Minimal -AsJson | ConvertFrom-Json).actions.Id
-        $rec = (& $script:Script -Profile Recommended -AsJson | ConvertFrom-Json).actions.Id
-        $agr = (& $script:Script -Profile Aggressive -AsJson | ConvertFrom-Json).actions.Id
+        $min = (& $script:Script -Preset Minimal -AsJson | ConvertFrom-Json).actions.Id
+        $rec = (& $script:Script -Preset Recommended -AsJson | ConvertFrom-Json).actions.Id
+        $agr = (& $script:Script -Preset Aggressive -AsJson | ConvertFrom-Json).actions.Id
 
         foreach ($id in $min) { $rec | Should -Contain $id }
         foreach ($id in $rec) { $agr | Should -Contain $id }
@@ -123,25 +123,25 @@ Describe 'Comportamento do script' {
     }
 
     It 'o perfil Minimal não contém nada de risco alto' {
-        $min = (& $script:Script -Profile Minimal -AsJson | ConvertFrom-Json).actions
+        $min = (& $script:Script -Preset Minimal -AsJson | ConvertFrom-Json).actions
         foreach ($a in $min) { $a.Risk | Should -Not -Be 'High' }
     }
 
     It '-Skip remove a ação do plano' {
-        $all = (& $script:Script -Profile Aggressive -AsJson | ConvertFrom-Json).actions.Id
-        $skipped = (& $script:Script -Profile Aggressive -Skip 'svc.diagtrack' -AsJson | ConvertFrom-Json).actions.Id
+        $all = (& $script:Script -Preset Aggressive -AsJson | ConvertFrom-Json).actions.Id
+        $skipped = (& $script:Script -Preset Aggressive -Skip 'svc.diagtrack' -AsJson | ConvertFrom-Json).actions.Id
         $all | Should -Contain 'svc.diagtrack'
         $skipped | Should -Not -Contain 'svc.diagtrack'
     }
 
     It '-Only restringe o plano ao que foi pedido' {
-        $out = (& $script:Script -Profile Aggressive -Only 'app.solitaire' -AsJson | ConvertFrom-Json).actions
+        $out = (& $script:Script -Preset Aggressive -Only 'app.solitaire' -AsJson | ConvertFrom-Json).actions
         @($out).Count | Should -Be 1
         $out.Id | Should -Be 'app.solitaire'
     }
 
     It 'todo item do plano informa como reverter' {
-        $out = (& $script:Script -Profile Aggressive -AsJson | ConvertFrom-Json).actions
+        $out = (& $script:Script -Preset Aggressive -AsJson | ConvertFrom-Json).actions
         foreach ($a in $out) { $a.Reversible | Should -Not -BeNullOrEmpty }
     }
 }
