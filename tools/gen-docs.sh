@@ -92,9 +92,9 @@ bash_summary() {
 # O bloco <# ... #> no topo de um script PowerShell, sem os delimitadores.
 ps_header() {
   # Os .ps1 sao CRLF por politica do repositorio (o .gitattributes garante), e
-  # sem tirar o  a saida gerada no Windows difere da gerada no Linux em toda
+  # sem tirar o CR a saida gerada no Windows difere da gerada no Linux em toda
   # linha - o check do CI acusaria divergencia que nao existe.
-  tr -d '' <"$1" | awk '
+  tr -d '\015' <"$1" | awk '
     /^<#/ { inblock = 1; next }
     inblock && /^#>/ { exit }
     inblock { sub(/^    /, ""); print }
@@ -198,9 +198,14 @@ for t in "${targets[@]}"; do
   generate "$TMP/$file" "$kind" "$lang"
 
   if [ "$CHECK_ONLY" -eq 1 ]; then
-    if ! diff -q "$DOCS/$file" "$TMP/$file" >/dev/null 2>&1; then
+    # Comparacao sem 'diff': a imagem rockylinux:9 nao traz o diffutils, e o
+    # check falhava por ferramenta ausente em vez de por divergencia real.
+    if [ ! -f "$DOCS/$file" ] || [ "$(cat "$DOCS/$file")" != "$(cat "$TMP/$file")" ]; then
       echo "DESATUALIZADO  docs/$file"
-      diff -u "$DOCS/$file" "$TMP/$file" | head -20 || true
+      # O detalhe e util quando existe, mas nunca decide o resultado.
+      if command -v diff >/dev/null 2>&1; then
+        diff -u "$DOCS/$file" "$TMP/$file" | head -20 || true
+      fi
       drift=1
     else
       echo "OK             docs/$file"
