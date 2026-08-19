@@ -89,9 +89,14 @@ documented revert, or a service placed outside `Aggressive`, fails CI.
 
 ## Before you trust it
 
-The CI for this repository runs on Linux, so it checks the catalogue, the plan
-logic and the safety rules — **but it cannot verify that the removals actually
-work**. That needs Windows.
+CI runs the plan on a real `windows-latest` runner for all three profiles and
+checks that `-WhatIf` leaves the installed package count untouched — 50 packages
+before and after, on the run that added this job.
+
+What CI still does **not** do is apply anything. It never passes `-Apply`, so
+**the removals themselves have never been executed by any automated test**. That
+is deliberate: a CI runner is not a machine whose state is worth trusting for
+this, and a green check would suggest a guarantee that does not exist.
 
 Run it on one machine first, ideally a VM or a spare workstation, and confirm
 the result before using it anywhere that matters.

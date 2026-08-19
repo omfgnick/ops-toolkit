@@ -126,7 +126,8 @@ changes it.
 Nothing is applied without `-Apply`; a restore point is taken first; every
 registry key is exported before being touched and a revert script is generated.
 See [debloat/README.md](debloat/README.md), including the note on what CI can
-and cannot verify for it.
+and cannot verify for it — the plan runs on a real Windows runner, but nothing
+is ever applied there.
 
 ## Interactive menu
 

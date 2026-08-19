@@ -1,8 +1,8 @@
 <#
     Testes do debloat.
 
-    O CI roda em Linux, então não dá para verificar que a remoção funciona — isso
-    exige uma máquina Windows. O que dá para verificar, e importa mais, é que as
+    O CI nunca aplica o debloat, nem no job Windows, então não dá para verificar
+    que a remoção funciona. O que dá para verificar, e importa mais, é que as
     regras de segurança valem para TODA entrada do catálogo: que nada seja
     irreversível, que o risco esteja declarado, que serviço só apareça no perfil
     agressivo e que o modo padrão não altere nada.

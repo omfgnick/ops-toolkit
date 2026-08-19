@@ -2,7 +2,8 @@
     Contrato dos scripts PowerShell.
 
     Os testes usam a AST (não executam os scripts), porque a maioria depende de
-    cmdlets exclusivos do Windows e o CI roda em Linux. O que se verifica aqui é
+    cmdlets exclusivos do Windows. O job Windows do CI executa os scripts de
+    verdade; o que se verifica aqui é
     estrutura: ajuda, CmdletBinding e — o ponto mais importante — que todo script
     destrutivo suporte -WhatIf de verdade.
 #>
