@@ -201,7 +201,7 @@ jobs:
         run: |
           $readOnly = @(
             'Get-DiskSpaceReport', 'Get-OpenPorts', 'Get-EventLogErrors',
-            'New-UptimeReport', 'Audit-LocalUsers', 'Get-IncidentTriage',
+            'Audit-LocalUsers', 'Get-IncidentTriage',
             'Get-SecurityAudit'
           )
           $failed = @()
@@ -218,6 +218,33 @@ jobs:
           }
           if ($failed) { $failed | ForEach-Object { Write-Host "::error::$_" }; throw "$($failed.Count) script(s) falharam." }
           Write-Host "$($readOnly.Count) script(s) rodaram e produziram saída."
+
+      # Os que exigem alvo, apontados para a propria maquina: exercita o caminho
+      # completo sem depender de rede externa. Rodar sem alvo testaria a mensagem
+      # de erro, nao o script.
+      - name: Rodar os scripts que exigem alvo
+        shell: pwsh
+        run: |
+          $failed = @()
+          $cases = @(
+            @{ Name = 'New-UptimeReport'; Args = @{ Target = 'localhost'; OutputPath = (Join-Path $env:RUNNER_TEMP 'uptime.html') } }
+            @{ Name = 'Test-Endpoints'; Args = @{ Target = 'https://github.com' } }
+            @{ Name = 'Test-ServiceHealth'; Args = @{ Name = 'W32Time' } }
+            @{ Name = 'Test-NetworkPath'; Args = @{ Target = '127.0.0.1'; Count = 1 } }
+          )
+          foreach ($c in $cases) {
+            Write-Host "--- $($c.Name)"
+            try {
+              $splat = $c.Args
+              $out = & "./powershell/$($c.Name).ps1" @splat 2>&1 | Out-String
+              if ([string]::IsNullOrWhiteSpace($out)) { $failed += "$($c.Name) : nao imprimiu nada" }
+            }
+            catch {
+              $failed += "$($c.Name) : $($_.Exception.Message)"
+            }
+          }
+          if ($failed) { $failed | ForEach-Object { Write-Host "::error::$_" }; throw "$($failed.Count) script(s) falharam." }
+          Write-Host "$($cases.Count) script(s) com alvo rodaram."
 
       # O JSON tem de ser válido no Windows também, não só no schema em Linux.
       - name: Conferir a saída JSON
