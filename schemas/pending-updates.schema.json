@@ -48,7 +48,7 @@
     },
     "metadata_stale": {
       "type": "boolean",
-      "description": "Verdadeiro quando a lista passou de stale_after_days, ou quando a idade e desconhecida. Com isto verdadeiro, pending_count igual a 0 nao significa nada."
+      "description": "Verdadeiro quando a idade da lista alcancou stale_after_days (comparacao inclusiva), ou quando a idade e desconhecida. Com isto verdadeiro, pending_count igual a 0 nao significa nada."
     },
     "stale_after_days": {
       "type": "integer",

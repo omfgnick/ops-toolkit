@@ -62,8 +62,10 @@ for k in ("metadata_stale", "refreshed", "reboot_required"):
 '
 }
 
-@test "metadados velhos marcam stale mesmo sem nada pendente" {
-  # -d 0 força a condição sem depender do estado da máquina
+@test "-d 0 sempre marca a lista como velha" {
+  # A comparação é inclusiva justamente para que -d 0 tenha um significado
+  # definido; sem isso não havia como testar este caminho sem envelhecer um
+  # arquivo do sistema.
   command -v python3 >/dev/null 2>&1 || skip "sem python3"
   run "$SCRIPT" -j -d 0
   echo "$output" | python3 -c '
@@ -71,6 +73,20 @@ import json, sys
 d = json.load(sys.stdin)
 assert d["metadata_stale"] is True, "com -d 0 os metadados tinham de contar como velhos"
 assert d["status"] == 1, "lista velha precisa sair com status 1, nao 0"
+'
+}
+
+@test "o limiar realmente discrimina, e nao marca tudo como velho" {
+  # Sem este teste, trocar a comparação por 'sempre verdadeiro' passaria
+  # despercebido: o teste acima continuaria verde e o aviso perderia o sentido.
+  command -v python3 >/dev/null 2>&1 || skip "sem python3"
+  run "$SCRIPT" -j -d 3650
+  echo "$output" | python3 -c '
+import json, sys
+d = json.load(sys.stdin)
+if d["metadata_age_days"] < 0:
+    sys.exit(0)   # sem gerenciador de pacotes nao ha idade para comparar
+assert d["metadata_stale"] is False, "10 anos de limiar nao pode marcar lista de %d dia(s) como velha" % d["metadata_age_days"]
 '
 }
 

@@ -18,7 +18,8 @@
 # Options:
 #   -j           Emit JSON instead of the readable report
 #   -r           Refresh the package metadata first (needs root)
-#   -d DAYS      Consider the metadata stale after DAYS days (default 7)
+#   -d DAYS      Treat the metadata as stale once it is DAYS days old
+#                (default 7; -d 0 always warns, which is useful in tests)
 #   -o FILE      Also write the output to FILE
 #   -h           Show this help
 #
@@ -170,8 +171,12 @@ case "$PKG_MANAGER" in
 esac
 [ "$REFRESH_DONE" -eq 1 ] && METADATA_AGE_DAYS=0
 
+# The comparison is inclusive: at exactly the threshold the list already counts
+# as stale. Being one day early with the warning costs nothing; being one day
+# late means reporting "0 pending" from a list nobody refreshed. It also gives
+# '-d 0' a defined meaning - always warn - which is what makes this testable.
 STALE=0
-if [ "$METADATA_AGE_DAYS" -lt 0 ] || [ "$METADATA_AGE_DAYS" -gt "$STALE_DAYS" ]; then
+if [ "$METADATA_AGE_DAYS" -lt 0 ] || [ "$METADATA_AGE_DAYS" -ge "$STALE_DAYS" ]; then
   STALE=1
 fi
 
@@ -310,7 +315,7 @@ render_text() {
   fi
 
   if [ "$STALE" -eq 1 ]; then
-    echo "  WARNING: the package list is older than $STALE_DAYS day(s)."
+    echo "  WARNING: the package list is $METADATA_AGE_DAYS day(s) old (threshold: $STALE_DAYS)."
     echo "  A count of 0 means nothing until it is refreshed (-r, as root)."
     echo
   fi
