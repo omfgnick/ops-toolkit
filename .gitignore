@@ -1,1 +1,4 @@
 man/
+
+# estado local do wrangler (miniflare) — não versionar
+worker/.wrangler/
