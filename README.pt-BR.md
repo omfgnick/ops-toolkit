@@ -126,7 +126,8 @@ principal: o resto do toolkit relata o estado de uma máquina, esse altera.
 Nada é aplicado sem `-Apply`; um ponto de restauração é criado antes; cada chave
 de registro é exportada antes de ser tocada e um script de reversão é gerado.
 Veja o [debloat/README.md](debloat/README.md), inclusive a ressalva sobre o que o
-CI consegue e o que não consegue verificar ali.
+CI consegue e o que não consegue verificar ali — o plano roda num Windows de
+verdade, mas nada é aplicado lá.
 
 ## Menu interativo
 
