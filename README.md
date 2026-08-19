@@ -112,6 +112,22 @@ ops_toolkit_up 0
 ops_toolkit_collect_timestamp_seconds 1787091917
 ```
 
+## Debloat (Windows)
+
+Separate from everything above, in [`debloat/`](debloat/), and deliberately kept
+out of the main menu: the rest of this toolkit reports on a machine, that one
+changes it.
+
+```powershell
+.\debloat\Invoke-Debloat.ps1                     # prints the plan, changes nothing
+.\debloat\Invoke-Debloat.ps1 -Preset Recommended -Apply
+```
+
+Nothing is applied without `-Apply`; a restore point is taken first; every
+registry key is exported before being touched and a revert script is generated.
+See [debloat/README.md](debloat/README.md), including the note on what CI can
+and cannot verify for it.
+
 ## Interactive menu
 
 If you would rather pick from a list than remember names and flags:
