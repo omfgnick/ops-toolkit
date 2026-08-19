@@ -145,9 +145,9 @@ Export-ModuleMember -Function @(
     'Invoke-BackupRetention'
 )
 
-# Os nomes no plural batem com os arquivos .ps1 e são o que quem já usa o
-# toolkit espera digitar; as funções seguem a convenção do PowerShell
-# (substantivo singular), e os aliases mantêm as duas formas funcionando.
+# The functions follow the PowerShell convention (singular noun); the plural
+# names match the .ps1 filenames and are what anyone already using the toolkit
+# expects to type, so both keep working.
 Set-Alias -Name Test-Endpoints -Value Test-Endpoint
 Set-Alias -Name Get-OpenPorts -Value Get-OpenPort
 Set-Alias -Name Get-EventLogErrors -Value Get-EventLogError
