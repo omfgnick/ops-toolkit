@@ -65,9 +65,9 @@
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(
-    # Chamado de -Preset e não -Profile porque $Preset é variável automática do
-    # PowerShell (caminho do perfil do shell) e um parâmetro com esse nome a
-    # sombreia. O alias mantém -Profile funcionando para quem digita por reflexo.
+    # Named -Preset rather than -Profile because $Profile is a PowerShell
+    # automatic variable (the shell profile path) and a parameter by that name
+    # shadows it. The alias keeps -Profile working for anyone who types it.
     [Alias('Profile')]
     [ValidateSet('Minimal', 'Recommended', 'Aggressive')]
     [string]$Preset = 'Minimal',
