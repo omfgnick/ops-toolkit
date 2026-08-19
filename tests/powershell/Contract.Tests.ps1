@@ -87,3 +87,20 @@ Describe 'Comandos perigosos exigem proteção' {
         }
     }
 }
+
+Describe 'Codificação dos arquivos' {
+    It 'nenhum .ps1 ou .psd1 tem caractere fora de ASCII' {
+        # O PowerShell 5.1 lê UTF-8 sem BOM como ANSI e estraga o texto, e o
+        # PSScriptAnalyzer bloqueia por isso. Escrever só ASCII evita o problema
+        # sem depender de BOM. Já quebrou o CI três vezes — daqui em diante quem
+        # avisa é o teste, não o CI.
+        $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        $files = Get-ChildItem -Path $root -Include *.ps1, *.psd1, *.psm1 -Recurse -File |
+            Where-Object { $_.FullName -notmatch '[\/](tests)[\/]' }
+        foreach ($f in $files) {
+            $bytes = [System.IO.File]::ReadAllBytes($f.FullName)
+            $offenders = @($bytes | Where-Object { $_ -gt 127 })
+            $offenders.Count | Should -Be 0 -Because "$($f.Name) tem $($offenders.Count) byte(s) fora de ASCII"
+        }
+    }
+}
