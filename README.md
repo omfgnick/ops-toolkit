@@ -161,6 +161,21 @@ breaks the shebang on Linux), `.ps1` is **CRLF**. CI fails if that drifts.
 | `Cleanup-TempFiles.ps1` | Clears temporary directories |
 | `Audit-LocalUsers.ps1` | Local accounts, groups and password policy |
 
+### As a PowerShell module
+
+The scripts stay standalone — copying a single `.ps1` to a server still works.
+On a machine with the whole toolkit, importing the module gives you the same
+scripts as commands, with tab completion and `Get-Help`:
+
+```powershell
+Import-Module ./powershell/OpsToolkit.psd1
+Get-OpsToolkitCommand            # what is available
+Get-DiskSpaceReport -ThresholdPercent 20
+```
+
+The wrappers forward every parameter untouched (including `-WhatIf`), so the
+module cannot behave differently from the file it wraps.
+
 Full reference: [docs/powershell.en.md](docs/powershell.en.md)
 
 ## Bash

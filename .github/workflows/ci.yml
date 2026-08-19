@@ -215,6 +215,11 @@ jobs:
         run: |
           want=$(cat VERSION)
           fail=0
+          # O manifesto do módulo PowerShell também carrega a versão
+          psd=$(grep -oP "ModuleVersion\s*=\s*'\K[^']+" powershell/OpsToolkit.psd1)
+          if [ "$psd" != "$want" ]; then
+            echo "::error file=powershell/OpsToolkit.psd1::declara '$psd', esperado '$want'"; fail=1
+          fi
           for f in bash/*.sh; do
             got=$(grep -oP 'OPS_TOOLKIT_VERSION="\K[^"]+' "$f" | head -1)
             if [ "$got" != "$want" ]; then
