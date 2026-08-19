@@ -33,18 +33,113 @@
 param(
     [switch]$List,
     [string]$Run,
-    [hashtable]$Arguments = @{}
+    [hashtable]$Arguments = @{},
+
+    # Where to put the toolkit when running from the web. Given explicitly, the
+    # prompt is skipped - which is what an unattended run needs.
+    [string]$Destination
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $script:Version = '1.0.0'
-$script:Root = $PSScriptRoot
+$script:Repo = 'https://github.com/omfgnick/ops-toolkit'
+
+<#
+    Executed straight from the web -
+
+        & ([scriptblock]::Create((irm https://.../Menu.ps1)))
+
+    - there is no file on disk, so $PSScriptRoot is empty and the scripts this
+    menu launches are nowhere to be found. In that case, fetch the repository
+    into a temp folder and run from there. Started from a clone, this block is
+    skipped and nothing is downloaded.
+#>
+if ($PSScriptRoot) {
+    $script:Root = $PSScriptRoot
+}
+else {
+    $tempPath = Join-Path ([System.IO.Path]::GetTempPath()) 'ops-toolkit'
+    $keepPath = Join-Path $HOME 'ops-toolkit'
+
+    # Downloading somewhere on someone's machine is not a decision to make for
+    # them silently: ask where it goes. A temp copy is fine to try things out;
+    # anyone who wants to keep the toolkit should get it somewhere permanent.
+    if (-not $Destination) {
+        Write-Host ''
+        Write-Host 'ops-toolkit is not on this machine yet. Where should it go?'
+    Write-Host ''
+        Write-Host '   1' -ForegroundColor Cyan -NoNewline
+        Write-Host "  Temporary folder - just trying it out   $tempPath"
+        Write-Host '   2' -ForegroundColor Cyan -NoNewline
+        Write-Host "  Keep it - installs for real             $keepPath"
+        Write-Host '   q' -ForegroundColor Cyan -NoNewline
+        Write-Host '  cancel'
+        Write-Host ''
+    }
+    # Read-Host returns null when there is no console to read from; without this
+    # guard the next line would crash instead of cancelling cleanly.
+    if ($Destination) {
+        $script:Root = switch ($Destination) {
+            'Temp' { $tempPath }
+            'Keep' { $keepPath }
+            default { $Destination }   # any other value is taken as a path
+        }
+        Write-Host "Destination: $script:Root" -ForegroundColor DarkGray
+    }
+    else {
+        # Read-Host returns null when there is no console to read from; without
+        # this guard the next line would crash instead of cancelling cleanly.
+        $where = ''
+        try { $where = Read-Host 'Choose' } catch { $where = '' }
+        if ($null -eq $where) { $where = '' }
+
+        switch ($where.Trim()) {
+            '1' { $script:Root = $tempPath }
+            '2' { $script:Root = $keepPath }
+            default {
+                Write-Host 'Cancelled - nothing was downloaded.' -ForegroundColor DarkGray
+                exit 0
+            }
+        }
+    }
+
+    if (-not (Test-Path -LiteralPath (Join-Path $script:Root 'powershell'))) {
+        Write-Host "Downloading ops-toolkit into $script:Root ..." -ForegroundColor DarkGray
+        $zip = Join-Path ([System.IO.Path]::GetTempPath()) 'ops-toolkit.zip'
+        $unpack = Join-Path ([System.IO.Path]::GetTempPath()) 'ops-toolkit-unpack'
+        try {
+            # TLS 1.2 matters on stock Windows PowerShell 5.1, where it is not
+            # the default and GitHub refuses anything older.
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+            Invoke-WebRequest -Uri "$script:Repo/archive/refs/heads/main.zip" -OutFile $zip -UseBasicParsing
+            if (Test-Path -LiteralPath $unpack) { Remove-Item -LiteralPath $unpack -Recurse -Force }
+            Expand-Archive -LiteralPath $zip -DestinationPath $unpack -Force
+            if (Test-Path -LiteralPath $script:Root) { Remove-Item -LiteralPath $script:Root -Recurse -Force }
+            # The archive unpacks into ops-toolkit-main/; move it to a stable name
+            Move-Item -LiteralPath (Join-Path $unpack 'ops-toolkit-main') -Destination $script:Root
+            Remove-Item -LiteralPath $zip, $unpack -Recurse -Force -ErrorAction SilentlyContinue
+        }
+        catch {
+            Write-Error "Could not download the toolkit: $($_.Exception.Message)"
+            exit 1
+        }
+    }
+    else {
+        Write-Host "Using the copy already in $script:Root" -ForegroundColor DarkGray
+    }
+
+    if ($script:Root -eq $tempPath) {
+        Write-Host 'This copy is in a temporary folder and the system may delete it.' -ForegroundColor DarkGray
+        Write-Host "To keep it: git clone $script:Repo" -ForegroundColor DarkGray
+    }
+}
+
 $script:ScriptDir = Join-Path $script:Root 'powershell'
 
 if (-not (Test-Path -LiteralPath $script:ScriptDir)) {
-    Write-Error "Script directory not found: $script:ScriptDir. Run this from a clone of the repository."
+    Write-Error "Script directory not found: $script:ScriptDir"
     exit 2
 }
 
