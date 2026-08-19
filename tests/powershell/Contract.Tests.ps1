@@ -95,8 +95,12 @@ Describe 'Codificação dos arquivos' {
         # sem depender de BOM. Já quebrou o CI três vezes — daqui em diante quem
         # avisa é o teste, não o CI.
         $root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        # Compara caminho com caminho, e não regex com separador: no Windows o
+        # separador é '' e um padrão escrito com '/' não casa - foi assim que
+        # este teste passou no Linux e falhou no primeiro job Windows.
+        $testsDir = Join-Path $root 'tests'
         $files = Get-ChildItem -Path $root -Include *.ps1, *.psd1, *.psm1 -Recurse -File |
-            Where-Object { $_.FullName -notmatch '[\/](tests)[\/]' }
+            Where-Object { -not $_.FullName.StartsWith($testsDir, [StringComparison]::OrdinalIgnoreCase) }
         foreach ($f in $files) {
             $bytes = [System.IO.File]::ReadAllBytes($f.FullName)
             $offenders = @($bytes | Where-Object { $_ -gt 127 })
