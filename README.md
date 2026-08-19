@@ -244,6 +244,7 @@ breaks the shebang on Linux), `.ps1` is **CRLF**. CI fails if that drifts.
 | `Rotate-Logs.ps1` | Rotates and compresses log files |
 | `Cleanup-TempFiles.ps1` | Clears temporary directories |
 | `Audit-LocalUsers.ps1` | Local accounts, groups and password policy |
+| `Get-PendingUpdate.ps1` | Pending Windows updates, winget upgrades and pending reboot |
 | `Get-IncidentTriage.ps1` | One-shot machine snapshot for the start of a ticket |
 | `Test-NetworkPath.ps1` | Ping loss/latency and TCP port checks for link monitoring |
 | `Get-SecurityAudit.ps1` | Read-only security review: accounts, firewall, SMBv1, RDP |
@@ -285,6 +286,7 @@ Full reference: [docs/powershell.en.md](docs/powershell.en.md)
 | `metrics-collector.sh` | Runs the report scripts and emits one JSON, or Prometheus metrics for node_exporter |
 | `backup-verify.sh` | Backup that is only trusted after being restored and checksummed |
 | `inventory.sh` | Machine inventory: identity, OS, CPU, disks, network, packages |
+| `pending-updates.sh` | Pending and security updates, how old the package list is, pending reboot |
 
 Full reference: [docs/bash.en.md](docs/bash.en.md)
 

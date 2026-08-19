@@ -66,11 +66,23 @@ jobs:
         shell: pwsh
         run: |
           $settings = Join-Path $PWD 'PSScriptAnalyzerSettings.psd1'
-          # -Path aceita um caminho só, então roda por pasta e junta o resultado
+          # Arquivo a arquivo, e não pasta a pasta: o PSScriptAnalyzer já
+          # estourou com NullReferenceException aqui, e analisando a pasta
+          # inteira o erro não diz em qual arquivo foi - o job morre sem
+          # informação nenhuma. Assim o arquivo aparece no log.
           $results = @()
-          foreach ($dir in './powershell', './debloat') {
-            $results += Invoke-ScriptAnalyzer -Path $dir -Recurse -Settings $settings
+          $crashed = @()
+          $files = Get-ChildItem ./powershell, ./debloat -Recurse -File -Include *.ps1, *.psm1, *.psd1
+          foreach ($f in $files) {
+            try {
+              $results += Invoke-ScriptAnalyzer -Path $f.FullName -Settings $settings
+            } catch {
+              $crashed += "$($f.Name): $($_.Exception.Message)"
+              Write-Host "::error file=$($f.Name)::PSScriptAnalyzer estourou neste arquivo: $($_.Exception.Message)"
+            }
           }
+          Write-Host "Arquivos analisados: $($files.Count)"
+          if ($crashed) { throw "PSScriptAnalyzer estourou em $($crashed.Count) arquivo(s)." }
           if ($results) { $results | Format-Table -AutoSize RuleName, Severity, ScriptName, Line, Message }
           $blocking = @($results | Where-Object { $_.Severity -in 'Error', 'Warning' })
           Write-Host "Apontamentos: Error/Warning = $($blocking.Count), total = $(@($results).Count)"

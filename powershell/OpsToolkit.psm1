@@ -120,6 +120,7 @@ function Test-NetworkPath { [CmdletBinding()] param() & (Join-Path $script:Scrip
 function Get-SecurityAudit { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-SecurityAudit.ps1') @args }
 function Invoke-CommonRepair { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Repair-CommonIssues.ps1') @args }
 function Get-LocalUserAudit { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Audit-LocalUsers.ps1') @args }
+function Get-PendingUpdate { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-PendingUpdate.ps1') @args }
 function Backup-Folder {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Forwards -WhatIf to the wrapped .ps1, which implements ShouldProcess')]
     [CmdletBinding()] param()
@@ -145,6 +146,7 @@ Export-ModuleMember -Function @(
     'Invoke-LogRotation'
     'Clear-TempFile'
     'Get-LocalUserAudit'
+    'Get-PendingUpdate'
     'Get-IncidentTriage'
     'Test-NetworkPath'
     'Get-SecurityAudit'
