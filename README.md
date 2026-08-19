@@ -160,6 +160,9 @@ breaks the shebang on Linux), `.ps1` is **CRLF**. CI fails if that drifts.
 | `Rotate-Logs.ps1` | Rotates and compresses log files |
 | `Cleanup-TempFiles.ps1` | Clears temporary directories |
 | `Audit-LocalUsers.ps1` | Local accounts, groups and password policy |
+| `Get-IncidentTriage.ps1` | One-shot machine snapshot for the start of a ticket |
+| `Test-NetworkPath.ps1` | Ping loss/latency and TCP port checks for link monitoring |
+| `Get-SecurityAudit.ps1` | Read-only security review: accounts, firewall, SMBv1, RDP |
 
 ### As a PowerShell module
 

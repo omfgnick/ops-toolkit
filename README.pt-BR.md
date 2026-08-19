@@ -161,6 +161,9 @@ As quebras de linha são impostas pelo `.gitattributes`: `.sh` sempre em **LF**
 | `Rotate-Logs.ps1` | Rotaciona e compacta arquivos de log |
 | `Cleanup-TempFiles.ps1` | Limpa diretórios temporários |
 | `Audit-LocalUsers.ps1` | Contas locais, grupos e política de senha |
+| `Get-IncidentTriage.ps1` | Retrato da máquina em um comando, para abrir o atendimento |
+| `Test-NetworkPath.ps1` | Perda/latência de ping e checagem de portas TCP, para monitorar links |
+| `Get-SecurityAudit.ps1` | Revisão de segurança somente leitura: contas, firewall, SMBv1, RDP |
 
 ### Como módulo PowerShell
 
