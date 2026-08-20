@@ -109,7 +109,7 @@ Describe 'Repair-CommonIssues' -Skip:(-not (-not ($PSVersionTable.PSVersion.Majo
         $r = $json.repairs | Where-Object { $_.repair -eq 'WindowsUpdate' }
 
         if ($json.as_admin) {
-            $r.status | Should -Be 'done' -Because 'com privilegio o reparo tem de rodar'
+            $r.status | Should -Be 'done' -Because "com privilegio o reparo tem de rodar (detalhe: $($r.detail))"
             $script:renomeou | Should -BeGreaterThan 0 -Because 'a pasta e movida para o lado'
             $script:apagou | Should -Be 0 -Because 'apagar o SoftwareDistribution nao tem volta'
         }
@@ -131,7 +131,7 @@ Describe 'Repair-CommonIssues' -Skip:(-not (-not ($PSVersionTable.PSVersion.Majo
         $r = $json.repairs | Where-Object { $_.repair -eq 'Spooler' }
 
         if ($json.as_admin) {
-            $script:parou | Should -BeGreaterThan 0 -Because 'sem parar o servico a fila nao limpa'
+            $script:parou | Should -BeGreaterThan 0 -Because "sem parar o servico a fila nao limpa (status: $($r.status), detalhe: $($r.detail))"
         }
         else {
             $r.status | Should -Be 'skipped'
