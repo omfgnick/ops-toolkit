@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/top-consumers.schema.json",
+  "title": "top-consumers.sh --json",
+  "description": "Processos que mais consomem CPU, memoria e disco.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "host",
+    "generated_at",
+    "cpu_source",
+    "cores",
+    "sample_seconds",
+    "memory_total_gb",
+    "memory_free_gb",
+    "process_count",
+    "top_cpu",
+    "top_memory",
+    "top_io",
+    "status"
+  ],
+  "properties": {
+    "host": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "cpu_source": {
+      "type": "string",
+      "enum": [
+        "proc-sampled",
+        "ps-lifetime"
+      ],
+      "description": "proc-sampled e uso real na janela; ps-lifetime e media de vida do processo"
+    },
+    "cores": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sample_seconds": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "memory_total_gb": {
+      "type": "number",
+      "minimum": 0
+    },
+    "memory_free_gb": {
+      "type": "number",
+      "minimum": 0
+    },
+    "process_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "top_cpu": {
+      "$ref": "#/$defs/lista"
+    },
+    "top_memory": {
+      "$ref": "#/$defs/lista"
+    },
+    "top_io": {
+      "$ref": "#/$defs/lista"
+    },
+    "status": {
+      "type": "integer",
+      "enum": [
+        0
+      ]
+    }
+  },
+  "$defs": {
+    "lista": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pid",
+          "name",
+          "cpu_pct",
+          "memory_mb",
+          "io_mb",
+          "user"
+        ],
+        "properties": {
+          "pid": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "cpu_pct": {
+            "type": "number",
+            "minimum": 0
+          },
+          "memory_mb": {
+            "type": "number",
+            "minimum": 0
+          },
+          "io_mb": {
+            "type": "number",
+            "minimum": 0
+          },
+          "user": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

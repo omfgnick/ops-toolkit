@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/sessions.schema.json",
+  "title": "sessions.sh --json",
+  "description": "Sessoes abertas: quem, de onde, ha quanto tempo ocioso.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "host",
+    "generated_at",
+    "source",
+    "idle_warn_hours",
+    "count",
+    "parked",
+    "remote",
+    "items",
+    "status"
+  ],
+  "properties": {
+    "host": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "w",
+        "who",
+        "none"
+      ]
+    },
+    "idle_warn_hours": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "parked": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remote": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "user",
+          "tty",
+          "from",
+          "idle",
+          "idle_hours",
+          "parked",
+          "remote",
+          "running"
+        ],
+        "properties": {
+          "user": {
+            "type": "string"
+          },
+          "tty": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "idle": {
+            "type": "string"
+          },
+          "idle_hours": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "parked": {
+            "type": "boolean"
+          },
+          "remote": {
+            "type": "boolean"
+          },
+          "running": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    }
+  }
+}

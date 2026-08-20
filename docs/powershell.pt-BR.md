@@ -63,6 +63,63 @@ removed (dry run).
 .\Cleanup-TempFiles.ps1 -OlderThanDays 3 -Execute
 ```
 
+### `Compare-Machine.ps1`
+
+Answers "why does it only fail on that machine" by putting two machines side by side: OS, hotfixes, installed software, services and network.
+
+```
+.SYNOPSIS
+Answers "why does it only fail on that machine" by putting two machines side
+by side: OS, hotfixes, installed software, services and network.
+
+.DESCRIPTION
+Read-only. It does NOT log into anything: remote access needs credentials,
+and a script that asks for them is a script nobody should run. It works in
+two steps instead - each machine exports its own fingerprint, and the
+comparison happens wherever you have both files.
+
+    on machine A:   .\Compare-Machine.ps1 -Export a.fp
+    on machine B:   .\Compare-Machine.ps1 -Export b.fp
+    anywhere:       .\Compare-Machine.ps1 -Reference a.fp -Difference b.fp
+
+The fingerprint is plain sorted text, one "section|key|value" per line - the
+same format the Bash version writes, so a Linux export and a Windows export
+can be compared against each other. Plain text on purpose: you can read it,
+diff it and paste it into a ticket with no tooling at all.
+
+Services are read as ENABLED (start type), not as currently running. What is
+up right now changes minute to minute; what is set to start is configuration,
+and configuration is what differs between two machines.
+
+.PARAMETER Export
+Write this machine's fingerprint to this path.
+
+.PARAMETER Reference
+First fingerprint file to compare (machine A).
+
+.PARAMETER Difference
+Second fingerprint file to compare (machine B).
+
+.PARAMETER ShowEqual
+Also list what is identical, not only what differs.
+
+.PARAMETER AsJson
+Emit JSON instead of the readable report.
+
+.EXAMPLE
+.\Compare-Machine.ps1 -Export C:\temp\prod.fp
+
+Exports this machine's fingerprint.
+
+.EXAMPLE
+.\Compare-Machine.ps1 -Reference prod.fp -Difference homolog.fp
+
+Compares two machines.
+
+.NOTES
+Part of ops-toolkit. Exit codes: 0 no differences, 1 differences found.
+```
+
 ### `Get-DiskSpaceReport.ps1`
 
 Reports fixed-disk usage for one or more machines and flags volumes below a free-space threshold.
@@ -94,6 +151,52 @@ If provided, writes the report to this HTML file.
 
 .EXAMPLE
 .\Get-DiskSpaceReport.ps1 -ComputerName SRV01,SRV02 -ThresholdPercent 10 -HtmlPath .\disk.html
+```
+
+### `Get-DomainHealth.ps1`
+
+Full check of a domain: DNS records, TLS chain, HTTPS answer and the e-mail records that decide whether your mail is trusted.
+
+```
+.SYNOPSIS
+Full check of a domain: DNS records, TLS chain, HTTPS answer and the e-mail
+records that decide whether your mail is trusted.
+
+.DESCRIPTION
+Read-only. Wider than Get-TLSCertExpiry.ps1, which answers only "when does
+the certificate expire". This answers "is this domain healthy", which is the
+question behind most tickets that begin with "the site is weird".
+
+Two checks here catch what an expiry date misses:
+
+  - THE CHAIN, not just the leaf certificate. One valid for another 60 days
+    still breaks every client if the intermediate is missing from the
+    handshake. Browsers hide this by caching the intermediate; a service
+    account at 3am does not.
+  - SPF and DMARC. Their absence never surfaces as an error anywhere. The
+    mail simply lands in spam, quietly, for months.
+
+.PARAMETER Domain
+One or more domains to check.
+
+.PARAMETER WarnDays
+Warn when the certificate expires within this many days. Default 30.
+
+.PARAMETER AsJson
+Emit JSON instead of the readable report.
+
+.EXAMPLE
+.\Get-DomainHealth.ps1 example.com
+
+Prints the readable report.
+
+.EXAMPLE
+.\Get-DomainHealth.ps1 example.com outro.com -AsJson | ConvertFrom-Json
+
+Feeds a monitoring system.
+
+.NOTES
+Part of ops-toolkit. Exit codes: 0 healthy, 1 at least one finding.
 ```
 
 ### `Get-EventLogErrors.ps1`
@@ -336,6 +439,98 @@ If provided, writes the results to this CSV file.
 
 .EXAMPLE
 .\Get-TLSCertExpiry.ps1 -InputFile .\hosts.txt -WarnDays 45 -CsvPath .\certs.csv
+```
+
+### `Get-TopConsumer.ps1`
+
+Lists the processes eating the most CPU, memory and disk, with the account each one runs under.
+
+```
+.SYNOPSIS
+Lists the processes eating the most CPU, memory and disk, with the account
+each one runs under.
+
+.DESCRIPTION
+Read-only. The second question of every "this machine is slow" ticket,
+right after "who is logged on".
+
+On CPU there is a trap worth knowing about: the CPU property of a process
+is TOTAL SECONDS SINCE IT STARTED, not current usage. Sorting by it just
+lists whatever has been running longest - on a workstation that is almost
+always the browser or the antivirus, whether or not they are doing anything
+right now.
+
+This script samples twice and reports the DIFFERENCE, which is actual usage
+during the sample window, and normalises by core count so 100% means one
+machine, not one core.
+
+.PARAMETER Top
+How many processes to list per category. Default 5.
+
+.PARAMETER SampleSeconds
+Length of the CPU sample window. Default 2. Longer is steadier and slower.
+
+.PARAMETER AsJson
+Emit JSON instead of the readable report.
+
+.EXAMPLE
+.\Get-TopConsumer.ps1
+
+Prints the readable report.
+
+.EXAMPLE
+.\Get-TopConsumer.ps1 -Top 10 -SampleSeconds 5 -AsJson
+
+Longer, steadier sample for a monitoring system.
+
+.NOTES
+Part of ops-toolkit. Exit code is always 0: this is a report, and a busy
+machine is not by itself a fault.
+```
+
+### `Get-UserSession.ps1`
+
+Lists who is logged on: interactive sessions, RDP, idle time and disconnected sessions still holding resources.
+
+```
+.SYNOPSIS
+Lists who is logged on: interactive sessions, RDP, idle time and
+disconnected sessions still holding resources.
+
+.DESCRIPTION
+Read-only. Answers the first question of almost every support ticket -
+"who is on this machine, and since when".
+
+The value here is not the list of names. It is the two things that a plain
+"quser" leaves you to work out by hand:
+
+  - a DISCONNECTED session is not a closed one. It keeps the profile
+    loaded, files locked and licences taken, and it survives reboots of
+    nobody's attention for weeks. Those are listed first and counted apart.
+  - idle time tells you whether a session is in use or just parked.
+
+Falls back cleanly: quser is missing on some editions, so the session list
+is rebuilt from the Windows API when it is not there.
+
+.PARAMETER IdleWarnHours
+Flag a session as parked after this many idle hours. Default 4.
+
+.PARAMETER AsJson
+Emit JSON instead of the readable report.
+
+.EXAMPLE
+.\Get-UserSession.ps1
+
+Prints the readable report.
+
+.EXAMPLE
+.\Get-UserSession.ps1 -AsJson | ConvertFrom-Json | Select-Object -Expand disconnected
+
+Feeds a monitoring system with the count that matters.
+
+.NOTES
+Part of ops-toolkit. Exit codes: 0 nothing worth attention, 1 a disconnected
+or long-idle session was found.
 ```
 
 ### `New-UptimeReport.ps1`

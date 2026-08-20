@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/omfgnick/ops-toolkit/schemas/domain-health.schema.json",
+  "title": "domain-health.sh --json",
+  "description": "DNS, cadeia TLS, HTTPS e registros de e-mail por dominio.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generated_at",
+    "warn_days",
+    "dns_tool",
+    "finding_count",
+    "domains",
+    "status"
+  ],
+  "properties": {
+    "generated_at": {
+      "type": "string"
+    },
+    "warn_days": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "dns_tool": {
+      "type": "string"
+    },
+    "finding_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "domain",
+          "a",
+          "mx",
+          "ns",
+          "spf",
+          "dmarc",
+          "cert_subject",
+          "cert_issuer",
+          "cert_days_left",
+          "cert_chain",
+          "http_code",
+          "http_final_url",
+          "findings"
+        ],
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "a": {
+            "type": "string"
+          },
+          "mx": {
+            "type": "string"
+          },
+          "ns": {
+            "type": "string"
+          },
+          "spf": {
+            "type": "boolean"
+          },
+          "dmarc": {
+            "type": "boolean"
+          },
+          "cert_subject": {
+            "type": "string"
+          },
+          "cert_issuer": {
+            "type": "string"
+          },
+          "cert_days_left": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "cert_chain": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "incomplete",
+              "invalid",
+              "failed",
+              "skipped"
+            ]
+          },
+          "http_code": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "http_final_url": {
+            "type": "string"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "severity",
+                "area",
+                "message"
+              ],
+              "properties": {
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "high",
+                    "medium",
+                    "info"
+                  ]
+                },
+                "area": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "integer",
+      "enum": [
+        0,
+        1
+      ]
+    }
+  }
+}

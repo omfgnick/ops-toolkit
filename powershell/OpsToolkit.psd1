@@ -25,6 +25,10 @@
         'Invoke-CommonRepair'
         'Get-LocalUserAudit'
         'Get-PendingUpdate'
+        'Get-UserSession'
+        'Get-TopConsumer'
+        'Get-DomainHealth'
+        'Compare-Machine'
         'Backup-Folder'
         'Invoke-BackupRetention'
     )
