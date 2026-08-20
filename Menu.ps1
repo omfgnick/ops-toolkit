@@ -120,6 +120,14 @@ else {
             # The archive unpacks into ops-toolkit-main/; move it to a stable name
             Move-Item -LiteralPath (Join-Path $unpack 'ops-toolkit-main') -Destination $script:Root
             Remove-Item -LiteralPath $zip, $unpack -Recurse -Force -ErrorAction SilentlyContinue
+
+            # Arquivo que veio da internet carrega a Marca da Web, e com a
+            # politica RemoteSigned - padrao em Windows de trabalho - o
+            # PowerShell recusa rodar script assim: "a execucao de scripts foi
+            # desativada neste sistema". Unblock-File tira essa marca dos
+            # arquivos que ACABAMOS de baixar, e de mais nada.
+            Get-ChildItem -LiteralPath $script:Root -Recurse -Include *.ps1, *.psm1, *.psd1 -ErrorAction SilentlyContinue |
+                Unblock-File -ErrorAction SilentlyContinue
         }
         catch {
             Write-Error "Could not download the toolkit: $($_.Exception.Message)"
@@ -161,16 +169,56 @@ function Get-Entries {
         }
 }
 
+<#
+    Libera a execucao SO PARA ESTE PROCESSO do PowerShell.
+
+    Nao altera a politica da maquina nem a do usuario: o escopo Process morre
+    junto com esta janela. E o mesmo que fazer 'powershell -ExecutionPolicy
+    Bypass' na mao, so que sem exigir isso de quem roda o menu.
+
+    Se houver politica de grupo em vigor, esta chamada falha - e falhar aqui e o
+    certo: o menu avisa e nao tenta contornar decisao do administrador.
+#>
+function Unblock-CurrentProcess {
+    $atual = Get-ExecutionPolicy -Scope Process
+    if ($atual -eq 'Bypass' -or $atual -eq 'Unrestricted') { return $true }
+    try {
+        Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force -ErrorAction Stop
+        return $true
+    }
+    catch {
+        Write-Host ''
+        Write-Host 'A execucao de scripts esta bloqueada nesta maquina e o menu nao conseguiu liberar' -ForegroundColor Yellow
+        Write-Host 'nem para a propria sessao - provavelmente ha politica de grupo em vigor.' -ForegroundColor Yellow
+        Write-Host ''
+        Write-Host 'Abra o PowerShell assim e rode o menu de novo:' -ForegroundColor Cyan
+        Write-Host '    powershell -ExecutionPolicy Bypass -NoProfile' -ForegroundColor White
+        Write-Host ''
+        return $false
+    }
+}
+
 function Invoke-Entry {
     param([pscustomobject]$Entry, [hashtable]$Params = @{})
     Write-Host ''
     Write-Host "--- $($Entry.Name) " -ForegroundColor Cyan
     Write-Host ''
+    if (-not (Unblock-CurrentProcess)) { return 1 }
+
     $code = 0
     try {
+        # Tira a Marca da Web tambem de copia local que veio de download manual
+        Unblock-File -LiteralPath $Entry.Path -ErrorAction SilentlyContinue
         & $Entry.Path @Params
-        $code = $LASTEXITCODE
-        if ($null -eq $code) { $code = 0 }
+        # Script que termina com 'return' em vez de 'exit' nunca define
+        # $LASTEXITCODE, e sob Set-StrictMode le-lo LANCA em vez de dar nulo.
+        # Passou a acontecer sempre que o -AsJson e usado, porque o bloco de
+        # JSON encerra com 'return'.
+        $code = 0
+        if (Test-Path Variable:LASTEXITCODE) {
+            $code = $LASTEXITCODE
+            if ($null -eq $code) { $code = 0 }
+        }
     }
     catch {
         Write-Host $_.Exception.Message -ForegroundColor Red
