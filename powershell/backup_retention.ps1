@@ -27,7 +27,10 @@ param(
     [string]$FolderPath,
 
     [ValidateRange(1, [int]::MaxValue)]
-    [int]$DaysToKeep = 30
+    [int]$DaysToKeep = 30,
+
+    # Contrato do toolkit: todo script sabe falar JSON
+    [switch]$AsJson
 )
 
 Set-StrictMode -Version Latest
@@ -67,6 +70,18 @@ foreach ($file in $oldFiles) {
             Write-Warning "Failed to archive '$($file.FullName)': $($_.Exception.Message)"
         }
     }
+}
+
+if ($AsJson) {
+    [pscustomobject]@{
+        script       = 'backup_retention'
+        kind         = 'backup_retention'
+        hostname     = $env:COMPUTERNAME
+        generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        archived     = @($oldFiles).Count
+        removed      = @($oldZips).Count
+    } | ConvertTo-Json -Depth 6
+    return
 }
 
 Write-Host "Retention complete. Archived $($oldFiles.Count) file(s); removed $($oldZips.Count) old archive(s)."

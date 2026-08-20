@@ -39,7 +39,10 @@ param(
     [int]$CompressAfterDays = 7,
 
     [ValidateRange(1, [int]::MaxValue)]
-    [int]$DeleteAfterDays = 90
+    [int]$DeleteAfterDays = 90,
+
+    # Contrato do toolkit: todo script sabe falar JSON
+    [switch]$AsJson
 )
 
 Set-StrictMode -Version Latest
@@ -82,6 +85,18 @@ foreach ($log in $logs) {
             Write-Warning "Failed to rotate '$($log.FullName)': $($_.Exception.Message)"
         }
     }
+}
+
+if ($AsJson) {
+    [pscustomobject]@{
+        script       = 'Rotate-Logs'
+        kind         = 'log_rotation'
+        hostname     = $env:COMPUTERNAME
+        generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        compressed   = $compressed
+        deleted      = @($oldZips).Count
+    } | ConvertTo-Json -Depth 6
+    return
 }
 
 Write-Host "Rotation complete. Compressed $compressed log(s); deleted $($oldZips.Count) old archive(s)."

@@ -30,7 +30,10 @@ param(
 
     [string]$InputFile,
 
-    [switch]$AutoRestart
+    [switch]$AutoRestart,
+
+    # Contrato do toolkit: todo relatorio sabe falar JSON
+    [switch]$AsJson
 )
 
 begin {
@@ -84,5 +87,19 @@ end {
         })
     }
 
+    # JSON com envelope: o mesmo formato em todos os scripts, e assim
+    # quem consome nao precisa adivinhar se veio objeto ou lista. Um
+    # ConvertTo-Json direto colapsaria lista de um item em objeto.
+    if ($AsJson) {
+        [pscustomobject]@{
+            script       = 'Test-ServiceHealth'
+            kind         = 'service_health'
+            hostname     = $env:COMPUTERNAME
+            generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+            count        = @($results).Count
+            items        = @($results)
+        } | ConvertTo-Json -Depth 6
+        return
+    }
     $results
 }

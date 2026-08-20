@@ -221,7 +221,7 @@ Todo script segue o mesmo contrato — aprender um ensina os demais:
 |---|---|
 | `-h` / `--help` | Imprime o próprio cabeçalho do script: uso, opções, exemplos |
 | `--dry-run` / `-WhatIf` | Tudo que altera estado pode ser simulado antes |
-| `--json` / `-AsJson` | Scripts de relatório emitem saída estruturada para Grafana/Zabbix, validada no CI contra [schemas/](schemas/). Todo script Bash de relatório tem; no PowerShell os mais novos têm, e os antigos exportam com `-CsvPath`/`-HtmlPath` |
+| `--json` / `-AsJson` | Todo script emite saída estruturada para Grafana/Zabbix — 16 de 16 no Bash, 17 de 17 no PowerShell. Validada no CI contra [schemas/](schemas/), e um teste reprova se um script novo esquecer |
 | Códigos de saída | `0` sucesso · `1` falha em execução · `2` uso incorreto |
 
 As quebras de linha são impostas pelo `.gitattributes`: `.sh` sempre em **LF**
