@@ -77,55 +77,72 @@ Describe 'Cleanup-TempFiles' -Skip:(-not (-not ($PSVersionTable.PSVersion.Major 
 Describe 'Repair-CommonIssues' -Skip:(-not (-not ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows))) {
 
     <#
-        Limite honesto deste bloco: sem sessao elevada o script pula todo
-        reparo, entao os caminhos destrutivos nao rodam aqui. Tentei extrair a
-        checagem de elevacao para uma funcao e substitui-la com Mock; nao
-        funciona, porque a funcao nasce dentro do script invocado e o Pester nao
-        a enxerga na hora de resolver o Mock. Desfiz a mudanca: distorcer o
-        script de producao por um teste que nao funciona seria pior.
+        Estes testes valem nos DOIS ambientes, e por bom motivo: na minha
+        maquina a sessao nao e elevada e o script pula tudo; no runner do CI ela
+        E elevada e os caminhos destrutivos rodam de verdade, com os Mocks
+        interceptando. Escrever so para um dos casos daria teste verde e vazio
+        no outro - foi o que aconteceu na primeira versao.
 
-        O que DA para provar aqui, e importa: a guarda de elevacao funciona. Sem
-        privilegio, nenhum comando destrutivo e chamado - e o script chega ao
-        fim e diz 'skipped', o que impede este teste de passar por vacuidade.
+        'Network' fica de fora de proposito, e isso NAO e detalhe: aquele reparo
+        chama 'ipconfig /release', que nao passa por Mock nenhum porque e
+        executavel externo. Num runner elevado ele derrubaria a rede do proprio
+        job.
     #>
 
     BeforeEach {
-        $script:chamadas = 0
-        Mock -CommandName Stop-Service  -MockWith { $script:chamadas++ }
-        Mock -CommandName Start-Service -MockWith { $script:chamadas++ }
-        Mock -CommandName Rename-Item   -MockWith { $script:chamadas++ }
-        Mock -CommandName Remove-Item   -MockWith { $script:chamadas++ }
+        $script:renomeou = 0
+        $script:apagou   = 0
+        $script:parou    = 0
+        Mock -CommandName Rename-Item   -MockWith { $script:renomeou++ }
+        Mock -CommandName Remove-Item   -MockWith { $script:apagou++ }
+        Mock -CommandName Stop-Service  -MockWith { $script:parou++ }
+        Mock -CommandName Start-Service -MockWith { }
+        Mock -CommandName Get-ChildItem -MockWith { @() }
+        Mock -CommandName Test-Path     -MockWith { $true }
     }
 
-    It 'sem privilegio, nenhum comando destrutivo e chamado' {
-        $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair All -Confirm:$false -AsJson | ConvertFrom-Json
+    It 'o reparo do Windows Update RENOMEIA o SoftwareDistribution, nunca apaga' {
+        # Renomear e reversivel; apagar joga fora o historico de atualizacoes sem
+        # volta. Uma linha de diferenca no codigo, um estrago permanente na
+        # maquina de quem rodou.
+        $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair WindowsUpdate -Confirm:$false -AsJson | ConvertFrom-Json
+        $r = $json.repairs | Where-Object { $_.repair -eq 'WindowsUpdate' }
 
-        # Nao e vazio: o script rodou os quatro reparos e decidiu pular cada um
-        @($json.repairs).Count | Should -BeGreaterThan 0
-        $script:chamadas | Should -Be 0 -Because 'sem privilegio nada pode ser tocado'
-    }
-
-    It 'sem privilegio, os reparos que exigem admin se declaram pulados' {
-        # UserCache fica de fora de proposito: ele limpa o cache do PROPRIO
-        # usuario e nao precisa de elevacao. Exigir 'skipped' dele era erro do
-        # meu teste, nao do script - so descobri rodando.
-        $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair All -Confirm:$false -AsJson | ConvertFrom-Json
-
-        foreach ($nome in 'Spooler', 'WindowsUpdate', 'Network') {
-            $r = $json.repairs | Where-Object { $_.repair -eq $nome }
-            $r | Should -Not -BeNullOrEmpty -Because "$nome tem de aparecer no relatorio"
+        if ($json.as_admin) {
+            $r.status | Should -Be 'done' -Because 'com privilegio o reparo tem de rodar'
+            $script:renomeou | Should -BeGreaterThan 0 -Because 'a pasta e movida para o lado'
+            $script:apagou | Should -Be 0 -Because 'apagar o SoftwareDistribution nao tem volta'
+        }
+        else {
             $r.status | Should -Be 'skipped'
             $r.detail | Should -Match 'administrator'
+            ($script:renomeou + $script:apagou + $script:parou) | Should -Be 0
         }
     }
 
-    It 'o relatorio registra que a sessao nao era elevada' {
-        $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair Spooler -Confirm:$false -AsJson | ConvertFrom-Json
-        $json.as_admin | Should -BeFalse -Because 'e o que explica os pulos acima'
+    It '-WhatIf nao para servico, tenha privilegio ou nao' {
+        & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair WindowsUpdate -WhatIf | Out-Null
+        $script:parou | Should -Be 0 -Because '-WhatIf so mostra o que faria'
+        $script:renomeou | Should -Be 0
     }
 
-    It '-WhatIf tambem nao chama nada' {
-        & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair All -WhatIf | Out-Null
-        $script:chamadas | Should -Be 0
+    It 'o reparo do Spooler para e religa o servico' {
+        $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair Spooler -Confirm:$false -AsJson | ConvertFrom-Json
+        $r = $json.repairs | Where-Object { $_.repair -eq 'Spooler' }
+
+        if ($json.as_admin) {
+            $script:parou | Should -BeGreaterThan 0 -Because 'sem parar o servico a fila nao limpa'
+        }
+        else {
+            $r.status | Should -Be 'skipped'
+            $script:parou | Should -Be 0
+        }
+    }
+
+    It 'o relatorio diz se a sessao era elevada' {
+        # Sem isso, quem le o JSON nao sabe distinguir "nao precisou" de "nao pode"
+        $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair Spooler -Confirm:$false -AsJson | ConvertFrom-Json
+        $json.PSObject.Properties.Name | Should -Contain 'as_admin'
+        $json.as_admin | Should -BeOfType [bool]
     }
 }
