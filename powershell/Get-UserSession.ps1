@@ -110,7 +110,7 @@ function Read-QUser {
     '.' (ativo agora), 'mm' (minutos) e 'hh:mm'. Tratar tudo como numero daria
     4 horas para uma sessao ociosa ha 4 minutos.
 #>
-function ConvertTo-IdleHours {
+function ConvertTo-IdleTime {
     param([string]$Bruto)
     if (-not $Bruto -or $Bruto -eq '.' -or $Bruto -eq 'none') { return 0.0 }
     if ($Bruto -match '^\s*(\d+)\+?(\d+):(\d+)\s*$') {
@@ -133,7 +133,7 @@ try { $bruto = Read-QUser } catch { $bruto = $null }
 
 if ($bruto) {
     foreach ($s in $bruto) {
-        $horas = ConvertTo-IdleHours -Bruto $s.idleRaw
+        $horas = ConvertTo-IdleTime -Bruto $s.idleRaw
         $sessoes += [pscustomobject]@{
             user         = $s.user
             session      = $s.session

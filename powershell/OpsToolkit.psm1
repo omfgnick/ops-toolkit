@@ -121,6 +121,10 @@ function Get-SecurityAudit { [CmdletBinding()] param() & (Join-Path $script:Scri
 function Invoke-CommonRepair { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Repair-CommonIssues.ps1') @args }
 function Get-LocalUserAudit { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Audit-LocalUsers.ps1') @args }
 function Get-PendingUpdate { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-PendingUpdate.ps1') @args }
+function Get-UserSession { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-UserSession.ps1') @args }
+function Get-TopConsumer { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-TopConsumer.ps1') @args }
+function Get-DomainHealth { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Get-DomainHealth.ps1') @args }
+function Compare-Machine { [CmdletBinding()] param() & (Join-Path $script:ScriptRoot 'Compare-Machine.ps1') @args }
 function Backup-Folder {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Forwards -WhatIf to the wrapped .ps1, which implements ShouldProcess')]
     [CmdletBinding()] param()
@@ -147,6 +151,10 @@ Export-ModuleMember -Function @(
     'Clear-TempFile'
     'Get-LocalUserAudit'
     'Get-PendingUpdate'
+    'Get-UserSession'
+    'Get-TopConsumer'
+    'Get-DomainHealth'
+    'Compare-Machine'
     'Get-IncidentTriage'
     'Test-NetworkPath'
     'Get-SecurityAudit'

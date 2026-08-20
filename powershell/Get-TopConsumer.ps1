@@ -70,6 +70,7 @@ try {
             if ($u.User) { $donos[[int]$p.ProcessId] = "$($u.Domain)\$($u.User)" }
         } catch {
             # Processo de sistema costuma recusar; fica sem dono e tudo bem
+            Write-Verbose "Dono do PID $($p.ProcessId) indisponivel: $($_.Exception.Message)"
         }
     }
 } catch {
@@ -83,7 +84,9 @@ try {
 #>
 $antes = @{}
 foreach ($p in Get-Process -ErrorAction SilentlyContinue) {
-    try { $antes[$p.Id] = $p.CPU } catch { }
+    # Processo que morre entre a enumeracao e a leitura lanca; sem dono na
+    # amostra ele simplesmente nao entra no ranking.
+    try { $antes[$p.Id] = $p.CPU } catch { Write-Verbose "CPU do PID $($p.Id) nao pode ser lida" }
 }
 $relogio = [Diagnostics.Stopwatch]::StartNew()
 Start-Sleep -Seconds $SampleSeconds
