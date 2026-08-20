@@ -58,7 +58,18 @@ setup() {
 }
 
 @test "escolha numerada executa e volta ao menu" {
-  run bash -c "printf '7 -t 1\n\nq\n' | bash '$MENU'"
+  # O numero e descoberto na hora, e nao fixo: a lista sai em ordem alfabetica,
+  # entao qualquer script novo desloca as posicoes seguintes. Com '7' cravado,
+  # este teste quebrou ao entrar o compare-machines - falhou por causa do
+  # proprio teste, nao do menu.
+  local n
+  n="$(bash "$MENU" -l | grep -n '^disk-space$' | cut -d: -f1)"
+  [ -n "$n" ] || {
+    echo "disk-space sumiu da lista do menu"
+    return 1
+  }
+
+  run bash -c "printf '$n -t 1\n\nq\n' | bash '$MENU'"
   [ "$status" -eq 0 ]
   [[ "$output" == *"FILESYSTEM"* ]]
 }

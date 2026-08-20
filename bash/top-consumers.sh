@@ -104,7 +104,6 @@ done
 json_escape() {
   printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\t/ /g'
 }
-have() { command -v "$1" >/dev/null 2>&1; }
 
 CORES="$(nproc 2>/dev/null || echo 1)"
 [ "$CORES" -ge 1 ] 2>/dev/null || CORES=1
@@ -119,7 +118,11 @@ declare -A ANTES=()
 amostra_proc() {
   # utime + stime por PID, em ticks
   local pid stat campos
-  for pid in $(ls -1 /proc 2>/dev/null | grep -E '^[0-9]+$' || true); do
+  # Glob em vez de 'ls | grep': nome de diretorio com caractere estranho
+  # quebraria o pipe, e o shellcheck reprova o padrao com razao.
+  local caminho
+  for caminho in /proc/[0-9]*; do
+    pid="${caminho##*/}"
     [ -r "/proc/$pid/stat" ] || continue
     stat="$(cat "/proc/$pid/stat" 2>/dev/null || true)"
     [ -n "$stat" ] || continue
@@ -226,9 +229,14 @@ render_json() {
   printf '"memory_total_gb":%s,' "$MEM_TOTAL"
   printf '"memory_free_gb":%s,' "$MEM_FREE"
   printf '"process_count":%s,' "$TOTAL"
-  printf '"top_cpu":'; emite_json_lista "$TOP_CPU"; printf ','
-  printf '"top_memory":'; emite_json_lista "$TOP_MEM"; printf ','
-  printf '"top_io":'; emite_json_lista "$TOP_IO"
+  printf '"top_cpu":'
+  emite_json_lista "$TOP_CPU"
+  printf ','
+  printf '"top_memory":'
+  emite_json_lista "$TOP_MEM"
+  printf ','
+  printf '"top_io":'
+  emite_json_lista "$TOP_IO"
   printf ',"status":0}\n'
 }
 

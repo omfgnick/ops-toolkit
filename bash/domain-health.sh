@@ -103,7 +103,10 @@ have() { command -v "$1" >/dev/null 2>&1; }
 # Um resolvedor entre os tres mais comuns; sem nenhum, DNS vira 'skipped'
 DNS_TOOL=""
 for t in dig host nslookup; do
-  if have "$t"; then DNS_TOOL="$t"; break; fi
+  if have "$t"; then
+    DNS_TOOL="$t"
+    break
+  fi
 done
 
 # $1 = nome, $2 = tipo. Devolve uma resposta por linha, ou nada.
@@ -121,11 +124,11 @@ resolve() {
       ;;
     host)
       case "$tipo" in
-        A)   host -t A "$nome" 2>/dev/null    | sed -n 's/.* has address //p' || true ;;
-        NS)  host -t NS "$nome" 2>/dev/null   | sed -n 's/.* name server //p' || true ;;
-        MX)  host -t MX "$nome" 2>/dev/null   | sed -n 's/.* mail is handled by //p' || true ;;
-        TXT) host -t TXT "$nome" 2>/dev/null  | sed -n 's/.* descriptive text //p' || true ;;
-        *)   : ;;
+        A) host -t A "$nome" 2>/dev/null | sed -n 's/.* has address //p' || true ;;
+        NS) host -t NS "$nome" 2>/dev/null | sed -n 's/.* name server //p' || true ;;
+        MX) host -t MX "$nome" 2>/dev/null | sed -n 's/.* mail is handled by //p' || true ;;
+        TXT) host -t TXT "$nome" 2>/dev/null | sed -n 's/.* descriptive text //p' || true ;;
+        *) : ;;
       esac
       ;;
     nslookup)
@@ -134,11 +137,11 @@ resolve() {
       corpo="$(nslookup -type="$tipo" "$nome" 2>/dev/null |
         awk 'BEGIN { cab = 1 } cab && /^[[:space:]]*$/ { cab = 0; next } !cab' || true)"
       case "$tipo" in
-        A)   sed -n 's/^Address:[[:space:]]*//p' <<<"$corpo" || true ;;
-        NS)  sed -n 's/.*nameserver = //p' <<<"$corpo" || true ;;
-        MX)  sed -n 's/.*mail exchanger = //p' <<<"$corpo" || true ;;
+        A) sed -n 's/^Address:[[:space:]]*//p' <<<"$corpo" || true ;;
+        NS) sed -n 's/.*nameserver = //p' <<<"$corpo" || true ;;
+        MX) sed -n 's/.*mail exchanger = //p' <<<"$corpo" || true ;;
         TXT) tr -d '\n' <<<"$corpo" | grep -o '"[^"]*"' || true ;;
-        *)   : ;;
+        *) : ;;
       esac
       ;;
     *) : ;;
@@ -197,9 +200,9 @@ for dominio in "$@"; do
       if [ -n "$fim" ]; then
         fim_ts="$(date -d "$fim" +%s 2>/dev/null || echo 0)"
         if [ "$fim_ts" -gt 0 ]; then
-          cert_days=$(( (fim_ts - $(date +%s)) / 86400 ))
+          cert_days=$(((fim_ts - $(date +%s)) / 86400))
           if [ "$cert_days" -lt 0 ]; then
-            findings+=("high|tls|certificate EXPIRED $(( -cert_days )) day(s) ago")
+            findings+=("high|tls|certificate EXPIRED $((-cert_days)) day(s) ago")
           elif [ "$cert_days" -le "$WARN_DAYS" ]; then
             findings+=("high|tls|certificate expires in $cert_days day(s)")
           fi

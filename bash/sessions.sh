@@ -101,12 +101,12 @@ idle_to_hours() {
   local v="$1"
   case "$v" in
     '' | '.' | '-') echo 0 ;;
-    *days*) echo $(( ${v%%days*} * 24 )) ;;
+    *days*) echo $((${v%%days*} * 24)) ;;
     *:*m)
       v="${v%m}"
-      echo $(( ${v%%:*} ))
+      echo $((${v%%:*}))
       ;;
-    *:*) echo $(( ${v%%:*} )) ;;
+    *:*) echo $((${v%%:*})) ;;
     *m) echo 0 ;;
     *s) echo 0 ;;
     *) echo 0 ;;
