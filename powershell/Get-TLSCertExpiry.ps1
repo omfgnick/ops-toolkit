@@ -44,7 +44,10 @@ param(
     [ValidateRange(1, 120)]
     [int]$TimeoutSeconds = 10,
 
-    [string]$CsvPath
+    [string]$CsvPath,
+
+    # Contrato do toolkit: todo relatorio sabe falar JSON
+    [switch]$AsJson
 )
 
 begin {
@@ -131,5 +134,19 @@ end {
         Write-Verbose "CSV written to $CsvPath"
     }
 
+    # JSON com envelope: o mesmo formato em todos os scripts, e assim
+    # quem consome nao precisa adivinhar se veio objeto ou lista. Um
+    # ConvertTo-Json direto colapsaria lista de um item em objeto.
+    if ($AsJson) {
+        [pscustomobject]@{
+            script       = 'Get-TLSCertExpiry'
+            kind         = 'tls_expiry'
+            hostname     = $env:COMPUTERNAME
+            generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+            count        = @($results).Count
+            items        = @($results)
+        } | ConvertTo-Json -Depth 6
+        return
+    }
     $results
 }

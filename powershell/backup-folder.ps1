@@ -35,7 +35,10 @@ param(
 
     [string]$SmtpServer,
     [string]$MailTo,
-    [string]$MailFrom = "backup@localhost"
+    [string]$MailFrom = "backup@localhost",
+
+    # Contrato do toolkit: todo script sabe falar JSON
+    [switch]$AsJson
 )
 
 Set-StrictMode -Version Latest
@@ -96,10 +99,33 @@ try {
         }
         Write-BackupLog "Backup completed successfully ($entryCount entries): $backupFile"
         Send-StatusEmail -Status "Success" -Server $SmtpServer -To $MailTo -From $MailFrom -Body $log
+        if ($AsJson) {
+            [pscustomobject]@{
+                script       = 'backup-folder'
+                kind         = 'backup'
+                hostname     = $env:COMPUTERNAME
+                generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+                ok           = $true
+                backup_file  = $backupFile
+                entries      = $entryCount
+            } | ConvertTo-Json -Depth 6
+        }
     }
 }
 catch {
     Write-BackupLog "ERROR: $($_.Exception.Message)"
     Send-StatusEmail -Status "Failed" -Server $SmtpServer -To $MailTo -From $MailFrom -Body $log
+    # Mesmo falhando, quem pediu JSON recebe JSON - e o 'throw' preserva o
+    # codigo de saida, entao automacao continua sabendo que deu errado.
+    if ($AsJson) {
+        [pscustomobject]@{
+            script       = 'backup-folder'
+            kind         = 'backup'
+            hostname     = $env:COMPUTERNAME
+            generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+            ok           = $false
+            error        = $_.Exception.Message
+        } | ConvertTo-Json -Depth 6
+    }
     throw
 }

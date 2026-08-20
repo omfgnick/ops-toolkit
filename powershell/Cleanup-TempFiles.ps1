@@ -32,7 +32,10 @@ param(
     [ValidateRange(0, [int]::MaxValue)]
     [int]$OlderThanDays = 7,
 
-    [switch]$Execute
+    [switch]$Execute,
+
+    # Contrato do toolkit: todo script sabe falar JSON
+    [switch]$AsJson
 )
 
 Set-StrictMode -Version Latest
@@ -89,6 +92,24 @@ foreach ($location in $Path) {
         Files    = $locFiles
         FreedMB  = [math]::Round($locBytes / 1MB, 1)
     })
+}
+
+# Com -AsJson a saida e SO o JSON: tabela e aviso iriam junto pelo mesmo
+# stream e quebrariam qualquer 'ConvertFrom-Json' do outro lado.
+if ($AsJson) {
+    [pscustomobject]@{
+        script       = 'Cleanup-TempFiles'
+        kind         = 'temp_cleanup'
+        hostname     = $env:COMPUTERNAME
+        generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        executed     = [bool]$Execute
+        dry_run      = -not $Execute
+        files        = $totalFiles
+        freed_mb     = [math]::Round($totalBytes / 1MB, 1)
+        count        = @($perLocation).Count
+        items        = @($perLocation)
+    } | ConvertTo-Json -Depth 6
+    return
 }
 
 $perLocation | Format-Table -AutoSize | Out-String | Write-Host
