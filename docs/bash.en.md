@@ -177,6 +177,52 @@ Examples:
 Requires: openssl
 ```
 
+### `compare-machines.sh`
+
+Answers "why does it only fail on that machine" by putting two machines side by side: OS, kernel, packages, services and network.
+
+```
+compare-machines.sh — Answers "why does it only fail on that machine" by
+putting two machines side by side: OS, kernel, packages, services and network.
+
+It does NOT log into anything. Remote access needs credentials, and a script
+that asks for them is a script nobody should run. Instead it works in two
+steps: each machine exports its own fingerprint, and the comparison happens
+wherever you have both files.
+
+  on machine A:   ./compare-machines.sh -e a.fp
+  on machine B:   ./compare-machines.sh -e b.fp
+  anywhere:       ./compare-machines.sh -c a.fp b.fp
+
+The fingerprint is a plain sorted text file, one "section|key|value" per line.
+Plain text on purpose: comparing it needs nothing but coreutils, and you can
+read it, diff it and put it in a ticket without any tooling.
+
+Read-only: this script never changes a setting on either machine.
+
+Usage:
+  ./compare-machines.sh -e FILE           export this machine's fingerprint
+  ./compare-machines.sh -c FILE_A FILE_B  compare two fingerprints
+
+Options:
+  -e FILE      Export the fingerprint of this machine to FILE
+  -c           Compare mode: takes two fingerprint files as operands
+  -a           Show what is EQUAL too, not only the differences
+  -j           Emit JSON instead of the readable report
+  -h           Show this help
+
+Exit codes:
+  0 no differences (or export succeeded) · 1 differences found · 2 bad usage
+
+Examples:
+  ./compare-machines.sh -e /tmp/prod.fp
+  ./compare-machines.sh -c /tmp/prod.fp /tmp/homolog.fp
+  ./compare-machines.sh -c -j a.fp b.fp | jq '.differences[]'
+
+Requires: coreutils. Reads the package manager, systemd and ip when present;
+whatever is missing is simply absent from the fingerprint.
+```
+
 ### `disk-space.sh`
 
 Reports free space per mounted filesystem and flags anything at or below a threshold.
@@ -202,6 +248,50 @@ Examples:
   ./disk-space.sh -j | jq '.filesystems[] | select(.low)'
 
 Requires: df
+```
+
+### `domain-health.sh`
+
+Full check of a domain: DNS records, TLS chain, redirect chain and the e-mail records that decide whether your mail is trusted.
+
+```
+domain-health.sh — Full check of a domain: DNS records, TLS chain, redirect
+chain and the e-mail records that decide whether your mail is trusted.
+
+Wider than check-tls-expiry.sh, which answers only "when does the certificate
+expire". This one answers "is this domain healthy", which is the question
+behind most tickets that start with "the site is weird".
+
+Two checks here catch the failures that expiry dates miss:
+
+  - CHAIN, not just the leaf. A certificate valid for 60 more days still
+    breaks every client if the intermediate is missing from the handshake.
+    Browsers often hide this by caching the intermediate; curl does not, and
+    neither does a Java client at 3am.
+  - SPF and DMARC. Their absence never shows up as an error anywhere — the
+    mail just quietly lands in spam.
+
+Read-only: nothing here changes a record or a certificate.
+
+Usage:
+  ./domain-health.sh [options] DOMAIN [DOMAIN...]
+
+Options:
+  -w DAYS      Warn when the certificate expires within DAYS (default 30)
+  -j           Emit JSON instead of the readable report
+  -o FILE      Also write the output to FILE
+  -h           Show this help
+
+Exit codes:
+  0 everything healthy · 1 at least one finding · 2 bad usage
+
+Examples:
+  ./domain-health.sh example.com
+  ./domain-health.sh -w 45 example.com outro.com
+  ./domain-health.sh -j example.com | jq '.domains[].findings'
+
+Requires: coreutils. Uses openssl, curl and one of dig/host/nslookup; each
+missing tool turns its own checks into "skipped", never into a wrong answer.
 ```
 
 ### `incident-triage.sh`
@@ -466,6 +556,44 @@ Examples:
 Requires: find, gzip
 ```
 
+### `sessions.sh`
+
+Reports who is logged on: terminals, remote sessions, idle time and the sessions that are still open with nobody at the other end.
+
+```
+sessions.sh — Reports who is logged on: terminals, remote sessions, idle time
+and the sessions that are still open with nobody at the other end.
+
+Answers the first question of almost every support ticket — "who is on this
+machine, and since when".
+
+The number that matters is not how many people are logged in: it is how many
+sessions are IDLE or came from a remote address. A shell parked for three
+days still holds locks, keeps a tmux alive and counts as a way in.
+
+Read-only: this script never changes anything and never kills a session.
+
+Usage:
+  ./sessions.sh [options]
+
+Options:
+  -j           Emit JSON instead of the readable report
+  -i HOURS     Treat a session as parked after this many idle hours (default 4)
+  -o FILE      Also write the output to FILE
+  -h           Show this help
+
+Exit codes:
+  0 nothing worth attention · 1 parked or remote session found · 2 bad usage
+
+Examples:
+  ./sessions.sh
+  ./sessions.sh -j | jq '.parked, .remote'
+  ./sessions.sh -i 1
+
+Requires: coreutils and 'who'. Uses 'w' and 'last' when available; whatever is
+missing is reported as unknown instead of failing.
+```
+
 ### `support-bundle.sh`
 
 Collects everything an escalation usually asks for into a single archive you can attach to the ticket.
@@ -501,5 +629,50 @@ the archive before sending it outside your organisation - configuration files
 can still contain hostnames, IPs and internal names.
 
 Requires: tar, gzip
+```
+
+### `top-consumers.sh`
+
+Lists the processes using the most CPU, memory and disk, with the account each one runs under.
+
+```
+top-consumers.sh — Lists the processes using the most CPU, memory and disk,
+with the account each one runs under.
+
+The second question of every "this machine is slow" ticket, right after "who
+is logged on".
+
+A note on the CPU column, because it is a common trap: the %CPU that ps
+prints is an AVERAGE OVER THE PROCESS LIFETIME, not usage right now. Sorting
+by it lists whatever has been busy since boot, which on a server is usually
+the database — busy or not at this moment.
+
+This script samples /proc twice and reports the difference, which is real
+usage during the window, normalised by core count so 100% means the whole
+machine and not one core. Where /proc is unavailable it falls back to ps and
+says so, instead of pretending the number means something else.
+
+Read-only: this script never kills or renices anything.
+
+Usage:
+  ./top-consumers.sh [options]
+
+Options:
+  -n COUNT     How many processes per category (default 5)
+  -s SECONDS   CPU sample window (default 2)
+  -j           Emit JSON instead of the readable report
+  -o FILE      Also write the output to FILE
+  -h           Show this help
+
+Exit codes:
+  0 success · 2 bad usage
+
+Examples:
+  ./top-consumers.sh
+  ./top-consumers.sh -n 10 -s 5
+  ./top-consumers.sh -j | jq '.top_cpu[0]'
+
+Requires: coreutils and ps. Uses /proc for sampled CPU and per-process I/O
+when available.
 ```
 

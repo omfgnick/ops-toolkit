@@ -257,6 +257,10 @@ As quebras de linha são impostas pelo `.gitattributes`: `.sh` sempre em **LF**
 | `Cleanup-TempFiles.ps1` | Limpa diretórios temporários |
 | `Audit-LocalUsers.ps1` | Contas locais, grupos e política de senha |
 | `Get-PendingUpdate.ps1` | Atualizações do Windows pendentes, upgrades do winget e reboot pendente |
+| `Get-UserSession.ps1` | Quem está logado, tempo ocioso e sessões desconectadas que ainda seguram o perfil |
+| `Get-TopConsumer.ps1` | Processos que mais consomem CPU, memória e disco, por amostragem — não total de vida |
+| `Get-DomainHealth.ps1` | DNS, cadeia TLS, HTTPS e os registros SPF/DMARC que decidem se seu e-mail é confiável |
+| `Compare-Machine.ps1` | Tira a impressão digital de uma máquina e compara duas — "por que só naquela" |
 | `Get-IncidentTriage.ps1` | Retrato da máquina em um comando, para abrir o atendimento |
 | `Test-NetworkPath.ps1` | Perda/latência de ping e checagem de portas TCP, para monitorar links |
 | `Get-SecurityAudit.ps1` | Revisão de segurança somente leitura: contas, firewall, SMBv1, RDP |
@@ -299,6 +303,10 @@ Referência completa: [docs/powershell.pt-BR.md](docs/powershell.pt-BR.md)
 | `backup-verify.sh` | Backup que só é considerado bom depois de restaurado e conferido por hash |
 | `inventory.sh` | Inventário da máquina: identificação, SO, CPU, discos, rede, pacotes |
 | `pending-updates.sh` | Atualizações pendentes e de segurança, idade da lista de pacotes, reboot pendente |
+| `sessions.sh` | Quem está logado, tempo ocioso e sessões abertas de outra máquina |
+| `top-consumers.sh` | Processos que mais consomem CPU, memória e disco, amostrados do /proc |
+| `domain-health.sh` | DNS, cadeia TLS, HTTPS e SPF/DMARC de um ou mais domínios |
+| `compare-machines.sh` | Impressão digital da máquina e comparação entre duas, sem acesso remoto |
 
 Referência completa: [docs/bash.pt-BR.md](docs/bash.pt-BR.md)
 

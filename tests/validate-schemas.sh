@@ -87,6 +87,10 @@ SSHD_CONFIG="$WORK/sshd_config" run_json audit-hardening || true
 
 run_json inventory || true
 run_json pending-updates || true
+run_json sessions || true
+# -s 1 encurta a janela de amostragem: o CI nao precisa de precisao, precisa de
+# saida valida, e 2s por execucao somam no tempo total do job.
+run_json top-consumers -s 1 || true
 run_json net-diagnose || true
 run_json support-bundle -o "$WORK/bundle.tar.gz" || true
 
@@ -140,6 +144,17 @@ else
 fi
 
 echo
+echo
+echo "== Dominio (precisa de rede) =="
+# example.com existe justamente para isto e nao vai sumir; sem rede o teste
+# reporta PULADO em vez de falhar o job inteiro.
+if curl -s --max-time 6 -o /dev/null https://example.com 2>/dev/null; then
+  run_json domain-health example.com || true
+else
+  echo "  PULADO      domain-health (sem rede neste ambiente)"
+  skip=$((skip + 1))
+fi
+
 echo "== Dependentes do ambiente =="
 if command -v systemctl >/dev/null 2>&1 && systemctl is-system-running >/dev/null 2>&1; then
   run_json check-services systemd-journald || true

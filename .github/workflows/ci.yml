@@ -276,6 +276,9 @@ jobs:
 
           $argsFor = @{
             'Test-NetworkPath'    = @{ Target = '127.0.0.1' }
+            'Get-DomainHealth'    = @{ Domain = 'example.com' }
+            'Compare-Machine'     = $null   # precisa de -Export ou de dois arquivos
+            'Get-TopConsumer'     = @{ SampleSeconds = 1 }   # 2s x N execucoes pesa no job
             'Test-Endpoints'      = @{ Target = 'http://127.0.0.1:9' }
             'New-UptimeReport'    = @{ Target = '127.0.0.1' }
             'Test-ServiceHealth'  = @{ Name = 'W32Time' }

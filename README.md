@@ -258,6 +258,10 @@ breaks the shebang on Linux), `.ps1` is **CRLF**. CI fails if that drifts.
 | `Cleanup-TempFiles.ps1` | Clears temporary directories |
 | `Audit-LocalUsers.ps1` | Local accounts, groups and password policy |
 | `Get-PendingUpdate.ps1` | Pending Windows updates, winget upgrades and pending reboot |
+| `Get-UserSession.ps1` | Who is logged on, idle time and disconnected sessions still holding the profile |
+| `Get-TopConsumer.ps1` | Top processes by CPU, memory and disk, sampled — not lifetime totals |
+| `Get-DomainHealth.ps1` | DNS, TLS chain, HTTPS and the SPF/DMARC records that decide if your mail is trusted |
+| `Compare-Machine.ps1` | Fingerprints a machine and diffs two of them — "why only on that box" |
 | `Get-IncidentTriage.ps1` | One-shot machine snapshot for the start of a ticket |
 | `Test-NetworkPath.ps1` | Ping loss/latency and TCP port checks for link monitoring |
 | `Get-SecurityAudit.ps1` | Read-only security review: accounts, firewall, SMBv1, RDP |
@@ -300,6 +304,10 @@ Full reference: [docs/powershell.en.md](docs/powershell.en.md)
 | `backup-verify.sh` | Backup that is only trusted after being restored and checksummed |
 | `inventory.sh` | Machine inventory: identity, OS, CPU, disks, network, packages |
 | `pending-updates.sh` | Pending and security updates, how old the package list is, pending reboot |
+| `sessions.sh` | Who is logged on, idle time and sessions open from another machine |
+| `top-consumers.sh` | Top processes by CPU, memory and disk, sampled from /proc |
+| `domain-health.sh` | DNS, TLS chain, HTTPS and SPF/DMARC for one or more domains |
+| `compare-machines.sh` | Fingerprints a machine and diffs two of them, with no remote access |
 
 Full reference: [docs/bash.en.md](docs/bash.en.md)
 
