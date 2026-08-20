@@ -34,7 +34,10 @@ param(
     [int]$ThresholdPercent = 15,
 
     [string]$CsvPath,
-    [string]$HtmlPath
+    [string]$HtmlPath,
+
+    # Contrato do toolkit: todo relatorio sabe falar JSON
+    [switch]$AsJson
 )
 
 Set-StrictMode -Version Latest
@@ -93,4 +96,18 @@ if ($HtmlPath) {
     Write-Verbose "HTML written to $HtmlPath"
 }
 
+# JSON com envelope: o mesmo formato em todos os scripts, e assim
+# quem consome nao precisa adivinhar se veio objeto ou lista. Um
+# ConvertTo-Json direto colapsaria lista de um item em objeto.
+if ($AsJson) {
+    [pscustomobject]@{
+        script       = 'Get-DiskSpaceReport'
+        kind         = 'disk_space'
+        hostname     = $env:COMPUTERNAME
+        generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+        count        = @($report).Count
+        items        = @($report)
+    } | ConvertTo-Json -Depth 6
+    return
+}
 $report

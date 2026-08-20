@@ -37,7 +37,10 @@ param(
     [string]$OutputPath = '.\uptime-report.html',
 
     [ValidateRange(1, 300)]
-    [int]$TimeoutSeconds = 10
+    [int]$TimeoutSeconds = 10,
+
+    # Contrato do toolkit: todo relatorio sabe falar JSON
+    [switch]$AsJson
 )
 
 begin {
@@ -153,5 +156,19 @@ $rows
 
     $html | Out-File -FilePath $OutputPath -Encoding UTF8
     Write-Host "Report written to $OutputPath ($up/$total up, $down down)."
+    # JSON com envelope: o mesmo formato em todos os scripts, e assim
+    # quem consome nao precisa adivinhar se veio objeto ou lista. Um
+    # ConvertTo-Json direto colapsaria lista de um item em objeto.
+    if ($AsJson) {
+        [pscustomobject]@{
+            script       = 'New-UptimeReport'
+            kind         = 'uptime'
+            hostname     = $env:COMPUTERNAME
+            generated_at = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+            count        = @($results).Count
+            items        = @($results)
+        } | ConvertTo-Json -Depth 6
+        return
+    }
     $results
 }

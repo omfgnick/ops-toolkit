@@ -57,6 +57,23 @@ Describe 'Todos os scripts' {
     }
 }
 
+Describe 'Contrato JSON' {
+    It '<_.Name> declara -AsJson' -ForEach @( (Get-ChildItem -Path (Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'powershell') -Filter *.ps1) ) {
+        # O README prometia "todo relatório fala JSON" quando só 4 de 17 falavam.
+        # Agora que todos falam, é este teste que impede a promessa de voltar a
+        # ser mentira: script novo sem -AsJson reprova aqui.
+        $content = Get-Content -Path $_.FullName -Raw
+        $content | Should -Match '\[switch\]\$AsJson' -Because "$($_.Name) precisa aceitar -AsJson"
+    }
+
+    It '<_.Name> monta a saída JSON com ConvertTo-Json' -ForEach @( (Get-ChildItem -Path (Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'powershell') -Filter *.ps1) ) {
+        # Declarar o parâmetro e ignorá-lo seria pior que não ter: o usuário
+        # pede JSON, não recebe erro, e recebe tabela.
+        $content = Get-Content -Path $_.FullName -Raw
+        $content | Should -Match 'ConvertTo-Json' -Because "$($_.Name) declara -AsJson"
+    }
+}
+
 Describe 'Scripts destrutivos suportam -WhatIf' {
     It '<_> declara SupportsShouldProcess' -ForEach @(
         'Cleanup-TempFiles.ps1', 'Rotate-Logs.ps1', 'Test-ServiceHealth.ps1',

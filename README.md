@@ -222,7 +222,7 @@ Every script follows the same contract, so learning one teaches you all:
 |---|---|
 | `-h` / `--help` | Prints the script's own header block — usage, options, examples |
 | `--dry-run` / `-WhatIf` | Anything that changes state can be simulated first |
-| `--json` / `-AsJson` | Report scripts emit structured output for Grafana/Zabbix, validated in CI against [schemas/](schemas/). Every Bash report script has it; on the PowerShell side the newer scripts do, and the older ones export with `-CsvPath`/`-HtmlPath` instead |
+| `--json` / `-AsJson` | Every script emits structured output for Grafana/Zabbix — 16 of 16 in Bash, 17 of 17 in PowerShell. Validated in CI against [schemas/](schemas/), and a test fails if a new script forgets it |
 | Exit codes | `0` success · `1` runtime failure · `2` bad usage |
 
 Line endings are enforced by `.gitattributes`: `.sh` is always **LF** (CRLF

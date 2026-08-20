@@ -267,9 +267,24 @@ jobs:
       - name: Conferir a saida JSON
         shell: pwsh
         run: |
+          # Agora que os 17 scripts falam JSON, a descoberta alcanca todos - e
+          # varios exigem alvo. Quem precisa de argumento, recebe um seguro;
+          # quem so faz sentido com destino de verdade fica de fora.
+          $tmp = Join-Path $env:RUNNER_TEMP 'ops-json-check'
+          New-Item -ItemType Directory -Path $tmp -Force | Out-Null
+          Set-Content -Path (Join-Path $tmp 'exemplo.log') -Value 'linha' -Encoding ascii
+
           $argsFor = @{
             'Test-NetworkPath'    = @{ Target = '127.0.0.1' }
+            'Test-Endpoints'      = @{ Target = 'http://127.0.0.1:9' }
+            'New-UptimeReport'    = @{ Target = '127.0.0.1' }
+            'Test-ServiceHealth'  = @{ Name = 'W32Time' }
+            'Get-TLSCertExpiry'   = $null   # exige host TLS externo; nao inventa alvo em CI
+            'Rotate-Logs'         = @{ Path = $tmp }
+            'Cleanup-TempFiles'   = @{ Path = $tmp }   # sem -Execute e so relatorio
             'Repair-CommonIssues' = $null   # exige -Repair: reparo sem alvo nao roda
+            'backup-folder'       = $null   # criaria arquivo compactado de verdade
+            'backup_retention'    = $null   # move e apaga arquivo: nao em CI
           }
 
           $checked = 0
