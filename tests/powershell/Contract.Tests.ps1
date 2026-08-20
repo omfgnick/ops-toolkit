@@ -126,3 +126,30 @@ Describe 'Codificação dos arquivos' {
         }
     }
 }
+
+Describe 'Menu: politica de execucao' {
+    BeforeAll {
+        $script:MenuPath = Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'Menu.ps1'
+        $script:MenuSrc = Get-Content -LiteralPath $script:MenuPath -Raw
+    }
+
+    It 'so mexe na politica do PROCESSO, nunca da maquina ou do usuario' {
+        # A diferenca entre destravar a propria sessao e afrouxar a maquina de
+        # quem rodou o menu. A segunda nao e nossa para tomar.
+        $script:MenuSrc | Should -Match 'Set-ExecutionPolicy'
+        $script:MenuSrc | Should -Match "Set-ExecutionPolicy\s+-Scope\s+Process"
+        $script:MenuSrc | Should -Not -Match "-Scope\s+(LocalMachine|CurrentUser)"
+    }
+
+    It 'desbloqueia os arquivos que baixou' {
+        # Arquivo vindo da internet carrega a Marca da Web e a politica
+        # RemoteSigned o recusa, mesmo com o processo liberado.
+        $script:MenuSrc | Should -Match 'Unblock-File'
+    }
+
+    It 'le $LASTEXITCODE com guarda' {
+        # Script que termina com 'return' nunca define a variavel, e sob
+        # Set-StrictMode le-la LANCA. Acontece sempre que -AsJson e usado.
+        $script:MenuSrc | Should -Match 'Test-Path\s+Variable:LASTEXITCODE'
+    }
+}

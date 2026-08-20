@@ -131,6 +131,19 @@ is ever applied there.
 
 ## Interactive menu
 
+> **"Running scripts is disabled on this system"?**
+> That is the PowerShell execution policy. The one-liner below is not affected —
+> it runs from memory — and the menu clears the way for the scripts it downloads,
+> **for its own process only**; your machine policy is left alone.
+>
+> If you run a local copy as a file instead (`.\Menu.ps1`), Windows blocks it
+> before any of our code loads. Start the shell like this:
+>
+> ```powershell
+> powershell -ExecutionPolicy Bypass -NoProfile
+> ```
+
+
 If you would rather pick from a list than remember names and flags:
 
 ```bash

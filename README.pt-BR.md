@@ -131,6 +131,19 @@ verdade, mas nada é aplicado lá.
 
 ## Menu interativo
 
+> **Apareceu "a execução de scripts foi desabilitada neste sistema"?**
+> É a política de execução do PowerShell. O one-liner abaixo não é afetado —
+> ele roda em memória — e o menu libera o caminho para os scripts que baixa,
+> **só para o próprio processo**; a política da sua máquina fica como está.
+>
+> Se você rodar uma cópia local como arquivo (`.\Menu.ps1`), o Windows bloqueia
+> antes de qualquer código nosso carregar. Abra o shell assim:
+>
+> ```powershell
+> powershell -ExecutionPolicy Bypass -NoProfile
+> ```
+
+
 Se preferir escolher de uma lista a decorar nomes e opções:
 
 ```bash
