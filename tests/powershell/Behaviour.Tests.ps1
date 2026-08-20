@@ -77,25 +77,27 @@ Describe 'Cleanup-TempFiles' -Skip:(-not (-not ($PSVersionTable.PSVersion.Major 
 Describe 'Repair-CommonIssues' -Skip:(-not (-not ($PSVersionTable.PSVersion.Major -ge 6 -and -not $IsWindows))) {
 
     <#
-        Estes testes valem nos DOIS ambientes, e por bom motivo: na minha
-        maquina a sessao nao e elevada e o script pula tudo; no runner do CI ela
-        E elevada e os caminhos destrutivos rodam de verdade, com os Mocks
-        interceptando. Escrever so para um dos casos daria teste verde e vazio
-        no outro - foi o que aconteceu na primeira versao.
+        Estes testes valem nos DOIS estados de privilegio, e por bom motivo: na
+        minha maquina a sessao nao e elevada e o script pula tudo; o runner
+        Windows do GitHub roda ELEVADO e os caminhos destrutivos executam de
+        verdade, com os Mocks interceptando. Escrever so para um dos casos daria
+        teste verde e vazio no outro.
+
+        A contagem sai de 'Should -Invoke', e nao de variavel compartilhada: o
+        corpo de um Mock roda no escopo do script mockado, nao no do teste, e la
+        '$script:qualquercoisa' nao existe. Sob Set-StrictMode isso LANCA, o
+        reparo caia no catch e o relatorio dizia 'failed' - passando a impressao
+        de bug no script quando o bug era do teste.
 
         'Network' fica de fora de proposito, e isso NAO e detalhe: aquele reparo
-        chama 'ipconfig /release', que nao passa por Mock nenhum porque e
-        executavel externo. Num runner elevado ele derrubaria a rede do proprio
-        job.
+        chama 'ipconfig /release', que nao passa por Mock porque e executavel
+        externo. Num runner elevado, derrubaria a rede do proprio job.
     #>
 
     BeforeEach {
-        $script:renomeou = 0
-        $script:apagou   = 0
-        $script:parou    = 0
-        Mock -CommandName Rename-Item   -MockWith { $script:renomeou++ }
-        Mock -CommandName Remove-Item   -MockWith { $script:apagou++ }
-        Mock -CommandName Stop-Service  -MockWith { $script:parou++ }
+        Mock -CommandName Rename-Item   -MockWith { }
+        Mock -CommandName Remove-Item   -MockWith { }
+        Mock -CommandName Stop-Service  -MockWith { }
         Mock -CommandName Start-Service -MockWith { }
         Mock -CommandName Get-ChildItem -MockWith { @() }
         Mock -CommandName Test-Path     -MockWith { $true }
@@ -110,37 +112,40 @@ Describe 'Repair-CommonIssues' -Skip:(-not (-not ($PSVersionTable.PSVersion.Majo
 
         if ($json.as_admin) {
             $r.status | Should -Be 'done' -Because "com privilegio o reparo tem de rodar (detalhe: $($r.detail))"
-            $script:renomeou | Should -BeGreaterThan 0 -Because 'a pasta e movida para o lado'
-            $script:apagou | Should -Be 0 -Because 'apagar o SoftwareDistribution nao tem volta'
+            Should -Invoke -CommandName Rename-Item -Times 1 -Exactly -Because 'a pasta e movida para o lado'
+            Should -Invoke -CommandName Remove-Item -Times 0 -Exactly -Because 'apagar o SoftwareDistribution nao tem volta'
         }
         else {
             $r.status | Should -Be 'skipped'
             $r.detail | Should -Match 'administrator'
-            ($script:renomeou + $script:apagou + $script:parou) | Should -Be 0
+            Should -Invoke -CommandName Rename-Item -Times 0 -Exactly
+            Should -Invoke -CommandName Remove-Item -Times 0 -Exactly
         }
     }
 
-    It '-WhatIf nao para servico, tenha privilegio ou nao' {
+    It '-WhatIf nao para servico nem move pasta, tenha privilegio ou nao' {
         & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair WindowsUpdate -WhatIf | Out-Null
-        $script:parou | Should -Be 0 -Because '-WhatIf so mostra o que faria'
-        $script:renomeou | Should -Be 0
+        Should -Invoke -CommandName Stop-Service -Times 0 -Exactly -Because '-WhatIf so mostra o que faria'
+        Should -Invoke -CommandName Rename-Item -Times 0 -Exactly
     }
 
-    It 'o reparo do Spooler para e religa o servico' {
+    It 'o reparo do Spooler para o servico antes de limpar a fila' {
         $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair Spooler -Confirm:$false -AsJson | ConvertFrom-Json
         $r = $json.repairs | Where-Object { $_.repair -eq 'Spooler' }
 
         if ($json.as_admin) {
-            $script:parou | Should -BeGreaterThan 0 -Because "sem parar o servico a fila nao limpa (status: $($r.status), detalhe: $($r.detail))"
+            $r.status | Should -Be 'done' -Because "detalhe: $($r.detail)"
+            Should -Invoke -CommandName Stop-Service -Times 1 -Exactly
+            Should -Invoke -CommandName Start-Service -Times 1 -Exactly -Because 'deixar o spooler parado seria pior que a fila suja'
         }
         else {
             $r.status | Should -Be 'skipped'
-            $script:parou | Should -Be 0
+            Should -Invoke -CommandName Stop-Service -Times 0 -Exactly
         }
     }
 
     It 'o relatorio diz se a sessao era elevada' {
-        # Sem isso, quem le o JSON nao sabe distinguir "nao precisou" de "nao pode"
+        # Sem isso, quem le o JSON nao distingue "nao precisou" de "nao pode"
         $json = & (Join-Path $script:Dir 'Repair-CommonIssues.ps1') -Repair Spooler -Confirm:$false -AsJson | ConvertFrom-Json
         $json.PSObject.Properties.Name | Should -Contain 'as_admin'
         $json.as_admin | Should -BeOfType [bool]
