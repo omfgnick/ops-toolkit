@@ -43,7 +43,13 @@ NOVOS="sessions top-consumers domain-health compare-machines"
   [[ "$output" == *'"source"'* ]]
   [[ "$output" == *'"parked"'* ]]
   [[ "$output" == *'"remote"'* ]]
-  command -v python3 >/dev/null 2>&1 && echo "$output" | python3 -c 'import json,sys; json.load(sys.stdin)'
+  # --separate-stderr: sem isso o bats junta os dois, e qualquer aviso do
+  # script entra no meio do JSON e o invalida. Foi assim que este teste pegou
+  # um erro real do top-consumers ao ler /proc de um processo que ja morreu.
+  if command -v python3 >/dev/null 2>&1; then
+    run --separate-stderr "$BASH_DIR/sessions.sh" -j
+    echo "$stdout" | python3 -c 'import json,sys; json.load(sys.stdin)'
+  fi
 }
 
 @test "sessions: -i recusa valor que não é número" {
@@ -58,7 +64,15 @@ NOVOS="sessions top-consumers domain-health compare-machines"
   # A distinção importa: 'proc-sampled' é uso na janela, 'ps-lifetime' é média
   # da vida inteira do processo. Quem lê o JSON precisa saber qual recebeu.
   [[ "$output" == *'"cpu_source"'* ]]
-  command -v python3 >/dev/null 2>&1 && echo "$output" | python3 -c '
+  if command -v python3 >/dev/null 2>&1; then
+    run --separate-stderr "$BASH_DIR/top-consumers.sh" -s 1 -n 2 -j
+    # O stderr tem de vir VAZIO: aviso solto ali acaba no JSON de quem
+    # redireciona 2>&1, que e o caso comum em cron.
+    [ -z "$stderr" ] || {
+      echo "top-consumers escreveu no stderr: $stderr"
+      return 1
+    }
+    echo "$stdout" | python3 -c '
 import json, sys
 d = json.load(sys.stdin)
 assert d["cpu_source"] in ("proc-sampled", "ps-lifetime"), d["cpu_source"]
@@ -67,6 +81,7 @@ for k in ("cores", "process_count"):
 for k in ("memory_total_gb", "memory_free_gb"):
     assert isinstance(d[k], (int, float)), k
 '
+  fi
 }
 
 @test "top-consumers: recusa contagem zero ou negativa" {
@@ -130,13 +145,27 @@ for k in ("memory_total_gb", "memory_free_gb"):
 }
 
 @test "nenhum dos novos altera o sistema" {
-  # São relatórios. compare-machines escreve APENAS o arquivo pedido em -e.
+  # São relatórios. A exceção legítima é a limpeza do próprio temporário criado
+  # com mktemp: descartar o que o script mesmo criou é diferente de mexer na
+  # máquina de alguém. A primeira versão deste teste reprovava justamente o
+  # 'trap rm' do compare-machines — o teste é que estava grosseiro demais.
   for s in $NOVOS; do
-    run grep -nE '\b(rm|mv|chmod|chown|systemctl (start|stop|restart)|kill|shutdown)\b' "$BASH_DIR/$s.sh"
+    run grep -nE '\b(mv|chmod|chown|systemctl (start|stop|restart)|kill|shutdown)\b' "$BASH_DIR/$s.sh"
     [ "$status" -ne 0 ] || {
       echo "$s.sh tem comando que altera o sistema:"
       echo "$output"
       return 1
     }
+
+    run grep -nE '\brm\b' "$BASH_DIR/$s.sh"
+    if [ "$status" -eq 0 ]; then
+      while IFS= read -r linha; do
+        [ -n "$linha" ] || continue
+        [[ "$linha" == *trap* ]] || {
+          echo "$s.sh usa rm fora da limpeza do próprio temporário: $linha"
+          return 1
+        }
+      done <<<"$output"
+    fi
   done
 }

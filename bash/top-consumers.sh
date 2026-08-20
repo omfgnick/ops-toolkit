@@ -156,7 +156,14 @@ if [ "$CPU_SOURCE" = "proc-sampled" ]; then
     # ticks -> segundos -> fracao da janela -> fracao da maquina
     pct=$(awk -v d="$delta" -v clk="$CLK" -v w="$SAMPLE" -v c="$CORES" \
       'BEGIN { printf "%.1f", (d / clk) / w / c * 100 }')
-    nome="$(tr -d '\0' <"/proc/$pid/comm" 2>/dev/null || echo '?')"
+    # O processo pode morrer entre listar /proc e ler os arquivos dele. O
+    # redirecionamento de ENTRADA falha no shell, nao no 'tr', entao o
+    # '2>/dev/null' do tr nao alcanca: a mensagem ia para o stderr e, como
+    # o bats junta stderr com stdout, entrava no meio do JSON.
+    nome='?'
+    if [ -r "/proc/$pid/comm" ]; then
+      nome="$(cat "/proc/$pid/comm" 2>/dev/null || echo '?')"
+    fi
     rssk="$(awk '/^VmRSS:/ { print $2 }' "/proc/$pid/status" 2>/dev/null || echo 0)"
     [ -n "$rssk" ] || rssk=0
     memmb=$(awk -v k="$rssk" 'BEGIN { printf "%.1f", k / 1024 }')
