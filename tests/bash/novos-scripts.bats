@@ -43,12 +43,12 @@ NOVOS="sessions top-consumers domain-health compare-machines"
   [[ "$output" == *'"source"'* ]]
   [[ "$output" == *'"parked"'* ]]
   [[ "$output" == *'"remote"'* ]]
-  # --separate-stderr: sem isso o bats junta os dois, e qualquer aviso do
-  # script entra no meio do JSON e o invalida. Foi assim que este teste pegou
-  # um erro real do top-consumers ao ler /proc de um processo que ja morreu.
+  # O bats junta stderr com stdout no $output, e qualquer aviso do script
+  # entraria no meio do JSON. Redirecionar dentro do comando separa os dois em
+  # qualquer versao do bats; '--separate-stderr' exigiria 1.5+.
   if command -v python3 >/dev/null 2>&1; then
-    run --separate-stderr "$BASH_DIR/sessions.sh" -j
-    echo "$stdout" | python3 -c 'import json,sys; json.load(sys.stdin)'
+    run bash -c "'$BASH_DIR/sessions.sh' -j 2>/dev/null"
+    echo "$output" | python3 -c 'import json,sys; json.load(sys.stdin)'
   fi
 }
 
@@ -65,14 +65,17 @@ NOVOS="sessions top-consumers domain-health compare-machines"
   # da vida inteira do processo. Quem lê o JSON precisa saber qual recebeu.
   [[ "$output" == *'"cpu_source"'* ]]
   if command -v python3 >/dev/null 2>&1; then
-    run --separate-stderr "$BASH_DIR/top-consumers.sh" -s 1 -n 2 -j
-    # O stderr tem de vir VAZIO: aviso solto ali acaba no JSON de quem
-    # redireciona 2>&1, que e o caso comum em cron.
-    [ -z "$stderr" ] || {
-      echo "top-consumers escreveu no stderr: $stderr"
+    # O stderr tem de vir VAZIO: aviso solto ali acaba no meio do JSON de quem
+    # redireciona 2>&1, que e o caso comum em cron. Aqui o stdout e descartado
+    # e sobra so o stderr para conferir.
+    run bash -c "'$BASH_DIR/top-consumers.sh' -s 1 -n 2 -j 2>&1 >/dev/null"
+    [ -z "$output" ] || {
+      echo "top-consumers escreveu no stderr: $output"
       return 1
     }
-    echo "$stdout" | python3 -c '
+
+    run bash -c "'$BASH_DIR/top-consumers.sh' -s 1 -n 2 -j 2>/dev/null"
+    echo "$output" | python3 -c '
 import json, sys
 d = json.load(sys.stdin)
 assert d["cpu_source"] in ("proc-sampled", "ps-lifetime"), d["cpu_source"]

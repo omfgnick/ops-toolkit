@@ -190,7 +190,14 @@ foreach ($d in $Domain) {
         $httpFinal = $resposta.BaseResponse.ResponseUri.AbsoluteUri
     }
     catch {
-        if ($_.Exception.Response) { $httpCode = [int]$_.Exception.Response.StatusCode }
+        # Sob Set-StrictMode, ler uma propriedade que a excecao nao tem LANCA em
+        # vez de devolver nulo - e nem toda falha de rede traz .Response. Foi
+        # isso que derrubou o job Windows: um dominio que nao responde virava
+        # excecao dentro do catch.
+        $resp = $_.Exception.PSObject.Properties['Response']
+        if ($resp -and $resp.Value) {
+            try { $httpCode = [int]$resp.Value.StatusCode } catch { $httpCode = 0 }
+        }
         Write-Verbose "HTTPS de $d : $($_.Exception.Message)"
     }
     if ($httpCode -eq 0) { $achados += @{ severity = 'high'; area = 'http'; message = 'no answer over HTTPS' } }
