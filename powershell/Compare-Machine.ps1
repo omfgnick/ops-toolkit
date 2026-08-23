@@ -62,7 +62,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:ToolkitVersion = '1.1.0'
+$script:ToolkitVersion = '1.2.0'
 
 if ($Export -and ($Reference -or $Difference)) {
     throw 'Pick one: -Export writes a fingerprint, -Reference/-Difference compare two.'

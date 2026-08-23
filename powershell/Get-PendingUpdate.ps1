@@ -68,7 +68,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:ToolkitVersion = '1.1.0'
+$script:ToolkitVersion = '1.2.0'
 
 function Test-RebootPending {
     <#
