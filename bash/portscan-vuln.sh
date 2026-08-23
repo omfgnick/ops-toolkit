@@ -3,6 +3,9 @@
 # portscan-vuln.sh — Scan a host with nmap and print a simple risk rating for
 # each open TCP port.
 #
+# Category: Network
+# Ask: @ | Host to scan - only with authorisation
+#
 # Usage:
 #   ./portscan-vuln.sh [-p PORTS] HOST
 #     -p PORTS   Port spec passed to nmap (default: 1-65535). Examples: "1-1024",

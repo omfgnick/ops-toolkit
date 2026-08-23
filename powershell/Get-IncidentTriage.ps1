@@ -34,6 +34,9 @@
 
 .EXAMPLE
     .\Get-IncidentTriage.ps1 -Hours 4 -OutFile "C:\Temp\triage-$env:COMPUTERNAME.txt"
+
+.NOTES
+    Category: Triage
 #>
 [CmdletBinding()]
 param(

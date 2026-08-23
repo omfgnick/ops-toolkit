@@ -30,6 +30,10 @@
 
 .EXAMPLE
     .\Get-TLSCertExpiry.ps1 -InputFile .\hosts.txt -WarnDays 45 -CsvPath .\certs.csv
+
+.NOTES
+    Category: Network
+    Ask: -Target | Host (e.g. example.com)
 #>
 [CmdletBinding()]
 param(

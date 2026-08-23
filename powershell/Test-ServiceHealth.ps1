@@ -22,6 +22,10 @@
 
 .EXAMPLE
     .\Test-ServiceHealth.ps1 -InputFile .\services.txt -AutoRestart -WhatIf
+
+.NOTES
+    Category: Services
+    Ask: -Name | Service name (e.g. W32Time)
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(

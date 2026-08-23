@@ -26,6 +26,9 @@
 
 .EXAMPLE
     .\Get-SecurityAudit.ps1 -AsJson | ConvertFrom-Json | Select-Object -ExpandProperty findings
+
+.NOTES
+    Category: Security
 #>
 [CmdletBinding()]
 param(

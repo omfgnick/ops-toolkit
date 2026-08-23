@@ -8,6 +8,8 @@
 #
 # Read-only: it copies and reads, never changes the machine.
 #
+# Category: Inventory
+#
 # Usage:
 #   ./support-bundle.sh [options]
 #

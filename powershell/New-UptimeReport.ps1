@@ -26,6 +26,10 @@
 
 .EXAMPLE
     .\New-UptimeReport.ps1 -InputFile .\endpoints.txt -OutputPath .\status.html
+
+.NOTES
+    Category: Network
+    Ask: -Target | Host to check
 #>
 [CmdletBinding()]
 param(

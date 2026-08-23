@@ -12,6 +12,8 @@
 #
 # Read-only: this script never changes anything and never kills a session.
 #
+# Category: Triage
+#
 # Usage:
 #   ./sessions.sh [options]
 #

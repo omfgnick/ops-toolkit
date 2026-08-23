@@ -20,6 +20,10 @@
 
 .EXAMPLE
     .\backup_retention.ps1 -FolderPath "C:\Logs" -WhatIf
+
+.NOTES
+    Category: Backup
+    Ask: -FolderPath | Backup directory
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(

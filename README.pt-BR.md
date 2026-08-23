@@ -155,18 +155,47 @@ Se preferir escolher de uma lista a decorar nomes e opções:
 ```
 
 A lista é montada a partir dos próprios scripts, então um script novo aparece
-sem mexer no menu — e a descrição vem do mesmo cabeçalho que alimenta o
-`--help`, de modo que as duas não podem divergir.
+sem mexer no menu — e a descrição, a categoria e as perguntas vêm todas do mesmo
+cabeçalho que alimenta o `--help`, de modo que não podem divergir.
 
-Digite o número para executar; o que vier depois do número é repassado direto
-(`7 -t 20`). O menu do PowerShell vai além e pergunta cada parâmetro do script
-escolhido.
+A tela é em inglês, como todo o resto que o toolkit imprime:
+
+```
++- ops-toolkit 1.2.0
+|  helpdesk-01 . Linux 6.8.0 . 14:22
++
+
+  Triage
+   1  disk-space           Reports free space per mounted filesystem and flags...
+   2  incident-triage      Single-shot snapshot of a machine's state, meant to...
+
+  Network
+   5  check-endpoints      Checks HTTP(S) endpoints for reachability, status...
+   6  check-tls-expiry     Reports how many days remain on the TLS certificate...
+
+  /text filter    3,7 several    s save    q quit
+```
+
+No prompt:
+
+| Você digita | O que acontece |
+| --- | --- |
+| `6` | Executa. Se o script exige algum argumento, o menu pergunta pelo nome dele em vez de deixar falhar com "uso incorreto". |
+| `6 -d 45` | O que vem depois do número vai direto para o script, sem ser tocado. |
+| `3,7,9` | Executa os três em ordem — uma triagem inteira de uma vez. Número inválido é pulado e o resto continua. |
+| `/tls` | Filtra a lista; o filtro fica visível no cabeçalho. `/` sozinho limpa. |
+| `s` | Salva o último relatório num arquivo, que costuma ser o passo seguinte. |
 
 Os dois também funcionam sem menu, que é o que uma tarefa agendada precisa:
 
 ```bash
 ./menu.sh -l                        # lista os nomes
+./menu.sh -c                        # o mesmo catálogo, em JSON
 ./menu.sh -r disk-space -t 20       # executa um direto
+```
+
+```powershell
+.\Menu.ps1 -Catalog | ConvertFrom-Json
 ```
 
 ### Rodar sem clonar

@@ -8,6 +8,8 @@
 #
 # Read-only: this script never changes anything.
 #
+# Category: Inventory
+#
 # Usage:
 #   ./inventory.sh [options]
 #

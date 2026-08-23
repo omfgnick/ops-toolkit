@@ -6,6 +6,9 @@
 #
 # Read-only: this script never changes anything.
 #
+# Category: Network
+# Ask: @ | Host to monitor
+#
 # Usage:
 #   ./net-monitor.sh [options] HOST [HOST...]
 #   ./net-monitor.sh [options] -f FILE

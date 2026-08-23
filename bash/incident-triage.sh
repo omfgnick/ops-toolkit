@@ -6,6 +6,8 @@
 #
 # Read-only: this script never changes anything.
 #
+# Category: Triage
+#
 # Usage:
 #   ./incident-triage.sh [options]
 #

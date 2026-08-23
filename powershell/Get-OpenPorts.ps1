@@ -22,6 +22,9 @@
 
 .EXAMPLE
     .\Get-OpenPorts.ps1 -State Established -Port 443,3389 -CsvPath .\ports.csv
+
+.NOTES
+    Category: Network
 #>
 [CmdletBinding()]
 param(

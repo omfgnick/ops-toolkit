@@ -37,6 +37,7 @@
     Longer, steadier sample for a monitoring system.
 
 .NOTES
+    Category: Triage
     Part of ops-toolkit. Exit code is always 0: this is a report, and a busy
     machine is not by itself a fault.
 #>

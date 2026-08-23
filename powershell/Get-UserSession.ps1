@@ -35,6 +35,7 @@
     Feeds a monitoring system with the count that matters.
 
 .NOTES
+    Category: Triage
     Part of ops-toolkit. Exit codes: 0 nothing worth attention, 1 a disconnected
     or long-idle session was found.
 #>

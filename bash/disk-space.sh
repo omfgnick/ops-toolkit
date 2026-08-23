@@ -3,6 +3,8 @@
 # disk-space.sh — Reports free space per mounted filesystem and flags anything
 # at or below a threshold. Bash counterpart of powershell/Get-DiskSpaceReport.ps1.
 #
+# Category: Triage
+#
 # Usage:
 #   ./disk-space.sh [options]
 #

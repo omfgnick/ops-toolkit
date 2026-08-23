@@ -51,6 +51,7 @@
     Answers "is this machine waiting for a reboot" without touching the network.
 
 .NOTES
+    Category: Services
     Part of ops-toolkit. Exit codes: 0 nothing pending, 1 updates or a reboot
     pending, 2 the update search could not run.
 #>

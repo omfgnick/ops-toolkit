@@ -18,6 +18,9 @@
 #
 # Read-only: nothing here changes a record or a certificate.
 #
+# Category: Network
+# Ask: @ | Domain (e.g. example.com)
+#
 # Usage:
 #   ./domain-health.sh [options] DOMAIN [DOMAIN...]
 #

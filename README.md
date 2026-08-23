@@ -155,18 +155,45 @@ If you would rather pick from a list than remember names and flags:
 ```
 
 The list is built from the scripts themselves, so a new script appears with no
-change to the menu — and its description comes from the same header that feeds
-`--help`, so the two cannot disagree.
+change to the menu — and its description, category and prompts all come from the
+same header that feeds `--help`, so they cannot disagree.
 
-Type a number to run one; anything after the number is passed straight through
-(`7 -t 20`). The PowerShell menu goes further and prompts for each of the
-chosen script's own parameters.
+```
++- ops-toolkit 1.2.0
+|  helpdesk-01 . Linux 6.8.0 . 14:22
++
 
-Both also work without the menu, which is what a scheduled task needs:
+  Triage
+   1  disk-space           Reports free space per mounted filesystem and flags...
+   2  incident-triage      Single-shot snapshot of a machine's state, meant to...
+
+  Network
+   5  check-endpoints      Checks HTTP(S) endpoints for reachability, status...
+   6  check-tls-expiry     Reports how many days remain on the TLS certificate...
+
+  /text filter    3,7 several    s save    q quit
+```
+
+At the prompt:
+
+| You type | What happens |
+| --- | --- |
+| `6` | Runs it. If the script needs an argument, the menu asks for it by name rather than letting it fail with "bad usage". |
+| `6 -d 45` | Anything after the number goes straight to the script, untouched. |
+| `3,7,9` | Runs the three in order — a whole triage in one go. A bad number is skipped and the rest still run. |
+| `/tls` | Filters the list; the filter stays visible in the header. `/` alone clears it. |
+| `s` | Saves the last report to a file, which is usually the next thing you do with it. |
+
+Both menus also work without the menu, which is what a scheduled task needs:
 
 ```bash
 ./menu.sh -l                        # list names
+./menu.sh -c                        # the same catalogue, as JSON
 ./menu.sh -r disk-space -t 20       # run one directly
+```
+
+```powershell
+.\Menu.ps1 -Catalog | ConvertFrom-Json
 ```
 
 ### Run it without cloning

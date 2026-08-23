@@ -62,7 +62,42 @@ DOCS="$ROOT/docs"
 bash_header() {
   # O 'trim' tira as linhas em branco das pontas: a linha 2 do script é sempre
   # um '#' sozinho, e sem isso todo bloco de código começava com um vazio.
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$1" | trim_blank
+  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$1" |
+    sem_metadados_do_menu | trim_blank
+}
+
+# Category: e Ask: sao para o menu montar a tela, nao para a referencia. Os
+# rotulos sao escritos em portugues e vazariam para o docs/*.en.md, que e
+# justamente o que a checagem de idioma existe para impedir.
+#
+# O .NOTES precisa de olhar adiante: em 16 scripts ele SO tem o Category:, e
+# imprimi-lo deixaria um titulo de secao sem nada embaixo.
+sem_metadados_do_menu() {
+  awk '
+    { l[NR] = $0 }
+    END {
+      for (i = 1; i <= NR; i++) {
+        if (l[i] ~ /^[[:space:]]*(Category|Ask):/) { corta = 1; continue }
+
+        if (l[i] ~ /^[[:space:]]*\.NOTES[[:space:]]*$/) {
+          vazia = 1
+          for (j = i + 1; j <= NR; j++) {
+            if (l[j] ~ /^[[:space:]]*$/) continue
+            if (l[j] ~ /^[[:space:]]*(Category|Ask):/) continue
+            if (l[j] ~ /^[[:space:]]*\./) break
+            vazia = 0
+            break
+          }
+          if (vazia) { corta = 1; continue }
+        }
+
+        # Uma linha em branco logo apos o que foi cortado viraria vazio duplo
+        if (corta && l[i] ~ /^[[:space:]]*$/) continue
+        corta = 0
+        print l[i]
+      }
+    }
+  '
 }
 
 # Remove linhas em branco do começo e do fim, preservando as do meio.
@@ -98,7 +133,7 @@ ps_header() {
     /^<#/ { inblock = 1; next }
     inblock && /^#>/ { exit }
     inblock { sub(/^    /, ""); print }
-  ' | trim_blank
+  ' | sem_metadados_do_menu | trim_blank
 }
 
 ps_summary() {

@@ -24,6 +24,11 @@
 .EXAMPLE
     .\backup-folder.ps1 -SourcePath "C:\Data" -DestinationPath "D:\Backups" `
         -SmtpServer smtp.example.com -MailTo ops@example.com -MailFrom backup@example.com
+
+.NOTES
+    Category: Backup
+    Ask: -SourcePath | Source directory
+    Ask: -DestinationPath | Destination directory
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(

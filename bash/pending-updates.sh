@@ -12,6 +12,8 @@
 # Refreshing the metadata (-r) is the only action it can take, and only when
 # asked for it explicitly.
 #
+# Category: Services
+#
 # Usage:
 #   ./pending-updates.sh [options]
 #
