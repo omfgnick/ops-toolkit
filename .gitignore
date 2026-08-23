@@ -2,3 +2,10 @@ man/
 
 # estado local do wrangler (miniflare) — não versionar
 worker/.wrangler/
+
+# binario do shellcheck: o CI baixa a propria copia a cada execucao e a extrai
+# na raiz do repo; a versao .exe aparece em trabalho local no Windows.
+# Nenhuma das duas deve ser versionada.
+shellcheck
+shellcheck.exe
+shellcheck.tar.xz
