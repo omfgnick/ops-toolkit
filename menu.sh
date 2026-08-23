@@ -332,7 +332,8 @@ run_script() {
     return 2
   }
 
-  local saida="$RUN_DIR/$name-$(date +%H%M%S).txt"
+  local saida
+  saida="$RUN_DIR/$name-$(date +%H%M%S).txt"
   echo
   printf '%s+- %s %s%s\n' "$CYAN" "$name" "$(regua "$name")" "$R"
   echo
