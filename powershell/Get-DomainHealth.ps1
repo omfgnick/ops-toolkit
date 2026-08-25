@@ -37,6 +37,8 @@
     Feeds a monitoring system.
 
 .NOTES
+    Category: Network
+    Ask: -Domain | Domain (e.g. example.com)
     Part of ops-toolkit. Exit codes: 0 healthy, 1 at least one finding.
 #>
 [CmdletBinding()]

@@ -8,6 +8,10 @@
 # considered good after it has been restored. A backup that was never restored
 # is not a backup — it is a large file taken on faith.
 #
+# Category: Backup
+# Ask: -s | Source directory
+# Ask: -d | Destination directory
+#
 # Usage:
 #   ./backup-verify.sh -s SOURCE -d DEST [options]
 #

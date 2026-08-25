@@ -28,6 +28,10 @@
 
 .EXAMPLE
     .\Test-Endpoints.ps1 -InputFile .\endpoints.txt -CsvPath .\health.csv
+
+.NOTES
+    Category: Network
+    Ask: -Target | URL(s) to check
 #>
 [CmdletBinding()]
 param(

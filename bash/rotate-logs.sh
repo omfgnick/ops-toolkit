@@ -6,6 +6,9 @@
 # Nothing is touched without -f: the default is a dry run, because this script
 # deletes files.
 #
+# Category: Backup
+# Ask: -d | Log directory
+#
 # Usage:
 #   ./rotate-logs.sh -d DIRECTORY [options]
 #

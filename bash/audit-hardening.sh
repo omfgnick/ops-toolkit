@@ -7,6 +7,8 @@
 # Reports only. It never changes a setting, so it is safe to run in production.
 # Findings are advisory: review each one in context before acting.
 #
+# Category: Security
+#
 # Usage:
 #   ./audit-hardening.sh [options]
 #

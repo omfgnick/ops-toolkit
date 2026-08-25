@@ -10,6 +10,8 @@
 #
 # Read-only: none of the invoked scripts change state.
 #
+# Category: Inventory
+#
 # Usage:
 #   ./metrics-collector.sh [options]
 #

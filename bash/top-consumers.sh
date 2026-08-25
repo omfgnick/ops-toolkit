@@ -18,6 +18,8 @@
 #
 # Read-only: this script never kills or renices anything.
 #
+# Category: Triage
+#
 # Usage:
 #   ./top-consumers.sh [options]
 #

@@ -3,6 +3,9 @@
 # check-tls-expiry.sh — Reports how many days remain on the TLS certificate of
 # each host. Bash counterpart of powershell/Get-TLSCertExpiry.ps1.
 #
+# Category: Network
+# Ask: @ | Host (e.g. example.com or example.com:443)
+#
 # Usage:
 #   ./check-tls-expiry.sh [options] HOST[:PORT] [HOST[:PORT]...]
 #   ./check-tls-expiry.sh [options] -f FILE

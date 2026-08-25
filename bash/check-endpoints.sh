@@ -3,6 +3,9 @@
 # check-endpoints.sh — Checks HTTP(S) endpoints for reachability, status code
 # and latency. Bash counterpart of powershell/Test-Endpoints.ps1.
 #
+# Category: Network
+# Ask: @ | URL(s) to check, separated by spaces
+#
 # Usage:
 #   ./check-endpoints.sh [options] URL [URL...]
 #   ./check-endpoints.sh [options] -f FILE

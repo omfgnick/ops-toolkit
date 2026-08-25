@@ -402,6 +402,28 @@ jobs:
               echo "::error file=$f::declara '$got', esperado '$want'"; fail=1
             fi
           done
+          # Nem todo script PowerShell embute a versao - varios so a expoem
+          # pelo manifesto do modulo. O que este laco impede e o caso ruim:
+          # declarar uma versao e deixa-la para tras numa troca.
+          for f in powershell/*.ps1; do
+            case "$f" in *OpsToolkit.*) continue ;; esac
+            got=$(grep -oP "ToolkitVersion\s*=\s*'\K[^']+" "$f" | head -1)
+            [ -n "$got" ] || continue
+            if [ "$got" != "$want" ]; then
+              echo "::error file=$f::declara '$got', esperado '$want'"; fail=1
+            fi
+          done
+          # Os dois menus embutem a versao no cabecalho que desenham. Os
+          # instaladores nao entram aqui de proposito: eles leem o arquivo
+          # VERSION em tempo de execucao, entao nao ha o que divergir.
+          got=$(grep -oP 'OPS_TOOLKIT_VERSION="\K[^"]+' menu.sh | head -1)
+          if [ "$got" != "$want" ]; then
+            echo "::error file=menu.sh::declara '$got', esperado '$want'"; fail=1
+          fi
+          got=$(grep -oP "script:Version\s*=\s*'\K[^']+" Menu.ps1 | head -1)
+          if [ "$got" != "$want" ]; then
+            echo "::error file=Menu.ps1::declara '$got', esperado '$want'"; fail=1
+          fi
           exit $fail
 
       # As referencias em docs/ sao geradas a partir do cabecalho dos scripts.

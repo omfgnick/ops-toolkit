@@ -18,6 +18,8 @@
 #
 # Read-only: this script never changes a setting on either machine.
 #
+# Category: Inventory
+#
 # Usage:
 #   ./compare-machines.sh -e FILE           export this machine's fingerprint
 #   ./compare-machines.sh -c FILE_A FILE_B  compare two fingerprints

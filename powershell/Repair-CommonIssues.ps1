@@ -34,6 +34,10 @@
 
 .EXAMPLE
     .\Repair-CommonIssues.ps1 -Repair All -Confirm:$false
+
+.NOTES
+    Category: Services
+    Ask: -Repair | Spooler, WindowsUpdate, Network, UserCache or All
 #>
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
 param(

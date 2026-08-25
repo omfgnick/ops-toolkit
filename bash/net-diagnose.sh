@@ -9,6 +9,8 @@
 #
 # Read-only: it never changes the configuration.
 #
+# Category: Network
+#
 # Usage:
 #   ./net-diagnose.sh [options]
 #

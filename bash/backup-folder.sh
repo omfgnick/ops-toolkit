@@ -3,6 +3,10 @@
 # backup-folder.sh — Compressed backup of a directory with integrity check and
 # optional e-mail notification.
 #
+# Category: Backup
+# Ask: -s | Source directory
+# Ask: -d | Destination directory
+#
 # Usage:
 #   ./backup-folder.sh [-s SRC_DIR] [-d DST_DIR] [-e EMAIL]
 #

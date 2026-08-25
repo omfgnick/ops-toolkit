@@ -17,6 +17,9 @@
 
 .EXAMPLE
     .\Audit-LocalUsers.ps1 -CsvPath .\localusers.csv -Verbose
+
+.NOTES
+    Category: Security
 #>
 [CmdletBinding()]
 param(

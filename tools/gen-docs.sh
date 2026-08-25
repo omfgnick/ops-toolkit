@@ -56,13 +56,60 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DOCS="$ROOT/docs"
 
 # ---- Extração ----------------------------------------------------------------
+#
+# Nenhum awk daqui sai antes de ler tudo, e isso NAO e estilo.
+#
+# Quem sai cedo no meio de um pipeline fecha a propria entrada; o estagio
+# anterior leva SIGPIPE, e com 'set -o pipefail' o pipeline inteiro devolve
+# nao-zero — o 'set -e' derruba o script sem imprimir uma linha sequer. Foi
+# assim que o gen-docs morreu no meio do quarto arquivo, no rockylinux e nao no
+# debian: gawk e mawk esvaziam o buffer em momentos diferentes, entao o
+# resultado dependia de quem o kernel escalonava primeiro.
+#
+# O padrao aqui e sempre 'fim = 1; next': marca e le ate o fim. Custa alguns kB
+# de leitura a mais e tira a corrida do caminho.
 
 # O bloco de cabeçalho de um script Bash: tudo entre o shebang e a primeira
 # linha que não é comentário. É exatamente o que o -h imprime.
 bash_header() {
   # O 'trim' tira as linhas em branco das pontas: a linha 2 do script é sempre
   # um '#' sozinho, e sem isso todo bloco de código começava com um vazio.
-  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$1" | trim_blank
+  awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$1" |
+    sem_metadados_do_menu | trim_blank
+}
+
+# Category: e Ask: sao para o menu montar a tela, nao para a referencia. Os
+# rotulos sao escritos em portugues e vazariam para o docs/*.en.md, que e
+# justamente o que a checagem de idioma existe para impedir.
+#
+# O .NOTES precisa de olhar adiante: em 16 scripts ele SO tem o Category:, e
+# imprimi-lo deixaria um titulo de secao sem nada embaixo.
+sem_metadados_do_menu() {
+  awk '
+    { l[NR] = $0 }
+    END {
+      for (i = 1; i <= NR; i++) {
+        if (l[i] ~ /^[[:space:]]*(Category|Ask):/) { corta = 1; continue }
+
+        if (l[i] ~ /^[[:space:]]*\.NOTES[[:space:]]*$/) {
+          vazia = 1
+          for (j = i + 1; j <= NR; j++) {
+            if (l[j] ~ /^[[:space:]]*$/) continue
+            if (l[j] ~ /^[[:space:]]*(Category|Ask):/) continue
+            if (l[j] ~ /^[[:space:]]*\./) break
+            vazia = 0
+            break
+          }
+          if (vazia) { corta = 1; continue }
+        }
+
+        # Uma linha em branco logo apos o que foi cortado viraria vazio duplo
+        if (corta && l[i] ~ /^[[:space:]]*$/) continue
+        corta = 0
+        print l[i]
+      }
+    }
+  '
 }
 
 # Remove linhas em branco do começo e do fim, preservando as do meio.
@@ -82,8 +129,9 @@ trim_blank() {
 # A primeira frase do cabeçalho, usada como resumo na lista.
 bash_summary() {
   bash_header "$1" | awk '
+    fim { next }
     /^[a-z0-9-]+\.sh — / { sub(/^[a-z0-9-]+\.sh — /, ""); buf = $0; next }
-    buf != "" && /^[[:space:]]*$/ { exit }
+    buf != "" && /^[[:space:]]*$/ { fim = 1; next }
     buf != "" { buf = buf " " $0; next }
     END { print buf }
   ' | sed 's/\([^.]*\.\).*/\1/'
@@ -95,17 +143,19 @@ ps_header() {
   # sem tirar o CR a saida gerada no Windows difere da gerada no Linux em toda
   # linha - o check do CI acusaria divergencia que nao existe.
   tr -d '\015' <"$1" | awk '
+    fim { next }
     /^<#/ { inblock = 1; next }
-    inblock && /^#>/ { exit }
+    inblock && /^#>/ { inblock = 0; fim = 1; next }
     inblock { sub(/^    /, ""); print }
-  ' | trim_blank
+  ' | sem_metadados_do_menu | trim_blank
 }
 
 ps_summary() {
   ps_header "$1" | awk '
+    fim { next }
     /^\.SYNOPSIS/ { grab = 1; next }
-    grab && /^\./ { exit }
-    grab && /^[[:space:]]*$/ { if (buf != "") exit; next }
+    grab && /^\./ { fim = 1; next }
+    grab && /^[[:space:]]*$/ { if (buf != "") fim = 1; next }
     grab { sub(/^[[:space:]]+/, ""); buf = (buf == "" ? $0 : buf " " $0) }
     END { print buf }
   ' | sed 's/\([^.]*\.\).*/\1/'

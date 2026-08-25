@@ -25,6 +25,9 @@
 
 .EXAMPLE
     .\Get-DiskSpaceReport.ps1 -ComputerName SRV01,SRV02 -ThresholdPercent 10 -HtmlPath .\disk.html
+
+.NOTES
+    Category: Triage
 #>
 [CmdletBinding()]
 param(

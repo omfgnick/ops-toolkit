@@ -24,6 +24,9 @@
 
 .EXAMPLE
     .\Cleanup-TempFiles.ps1 -OlderThanDays 3 -Execute
+
+.NOTES
+    Category: Services
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(

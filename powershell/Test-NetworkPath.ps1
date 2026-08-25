@@ -40,6 +40,10 @@
 
 .EXAMPLE
     .\Test-NetworkPath.ps1 -Target gateway.local -AsJson | ConvertFrom-Json
+
+.NOTES
+    Category: Network
+    Ask: -Target | Host or IP
 #>
 [CmdletBinding()]
 param(

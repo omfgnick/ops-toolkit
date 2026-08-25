@@ -48,6 +48,7 @@
     Compares two machines.
 
 .NOTES
+    Category: Inventory
     Part of ops-toolkit. Exit codes: 0 no differences, 1 differences found.
 #>
 [CmdletBinding()]

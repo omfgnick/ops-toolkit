@@ -3,6 +3,9 @@
 # check-services.sh — Checks systemd services and optionally restarts the ones
 # that are down. Bash counterpart of powershell/Test-ServiceHealth.ps1.
 #
+# Category: Services
+# Ask: @ | Service name (e.g. sshd)
+#
 # Usage:
 #   ./check-services.sh [options] SERVICE [SERVICE...]
 #   ./check-services.sh [options] -f FILE

@@ -27,6 +27,10 @@
 
 .EXAMPLE
     .\Rotate-Logs.ps1 -Path C:\Logs -Filter *.txt -WhatIf
+
+.NOTES
+    Category: Backup
+    Ask: -Path | Log directory
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(

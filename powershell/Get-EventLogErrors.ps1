@@ -29,6 +29,9 @@
 
 .EXAMPLE
     .\Get-EventLogErrors.ps1 -LogName System -Level Error -Detailed -CsvPath .\errors.csv
+
+.NOTES
+    Category: Triage
 #>
 [CmdletBinding()]
 param(
