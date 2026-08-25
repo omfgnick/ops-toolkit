@@ -56,6 +56,18 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DOCS="$ROOT/docs"
 
 # ---- Extração ----------------------------------------------------------------
+#
+# Nenhum awk daqui sai antes de ler tudo, e isso NAO e estilo.
+#
+# Quem sai cedo no meio de um pipeline fecha a propria entrada; o estagio
+# anterior leva SIGPIPE, e com 'set -o pipefail' o pipeline inteiro devolve
+# nao-zero — o 'set -e' derruba o script sem imprimir uma linha sequer. Foi
+# assim que o gen-docs morreu no meio do quarto arquivo, no rockylinux e nao no
+# debian: gawk e mawk esvaziam o buffer em momentos diferentes, entao o
+# resultado dependia de quem o kernel escalonava primeiro.
+#
+# O padrao aqui e sempre 'fim = 1; next': marca e le ate o fim. Custa alguns kB
+# de leitura a mais e tira a corrida do caminho.
 
 # O bloco de cabeçalho de um script Bash: tudo entre o shebang e a primeira
 # linha que não é comentário. É exatamente o que o -h imprime.
@@ -117,8 +129,9 @@ trim_blank() {
 # A primeira frase do cabeçalho, usada como resumo na lista.
 bash_summary() {
   bash_header "$1" | awk '
+    fim { next }
     /^[a-z0-9-]+\.sh — / { sub(/^[a-z0-9-]+\.sh — /, ""); buf = $0; next }
-    buf != "" && /^[[:space:]]*$/ { exit }
+    buf != "" && /^[[:space:]]*$/ { fim = 1; next }
     buf != "" { buf = buf " " $0; next }
     END { print buf }
   ' | sed 's/\([^.]*\.\).*/\1/'
@@ -130,17 +143,19 @@ ps_header() {
   # sem tirar o CR a saida gerada no Windows difere da gerada no Linux em toda
   # linha - o check do CI acusaria divergencia que nao existe.
   tr -d '\015' <"$1" | awk '
+    fim { next }
     /^<#/ { inblock = 1; next }
-    inblock && /^#>/ { exit }
+    inblock && /^#>/ { inblock = 0; fim = 1; next }
     inblock { sub(/^    /, ""); print }
   ' | sem_metadados_do_menu | trim_blank
 }
 
 ps_summary() {
   ps_header "$1" | awk '
+    fim { next }
     /^\.SYNOPSIS/ { grab = 1; next }
-    grab && /^\./ { exit }
-    grab && /^[[:space:]]*$/ { if (buf != "") exit; next }
+    grab && /^\./ { fim = 1; next }
+    grab && /^[[:space:]]*$/ { if (buf != "") fim = 1; next }
     grab { sub(/^[[:space:]]+/, ""); buf = (buf == "" ? $0 : buf " " $0) }
     END { print buf }
   ' | sed 's/\([^.]*\.\).*/\1/'

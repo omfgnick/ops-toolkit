@@ -95,3 +95,29 @@ setup() {
     }
   done
 }
+
+@test "nenhum awk do gerador sai antes de ler tudo" {
+  # Sair cedo no meio de um pipeline manda SIGPIPE para o estágio anterior, e
+  # com 'pipefail' isso derruba o script inteiro — em silêncio, porque o erro
+  # chega antes de qualquer saída. Aconteceu com o gen-docs no rockylinux e não
+  # no debian: gawk e mawk esvaziam o buffer em momentos diferentes.
+  #
+  # Duas coisas ficam de fora, e por motivo e não por conveniência:
+  #   - 'exit' com código é decisão do script, não de um awk;
+  #   - um awk que recebe o ARQUIVO como operando é o primeiro estágio, então
+  #     não há ninguém acima dele para levar SIGPIPE.
+  achado=""
+  while IFS= read -r linha; do
+    case "$linha" in
+      *'"$0"'* | *'"$1"'*) continue ;;
+    esac
+    achado="$achado$linha"$'
+'
+  done < <(grep -nE '(^|[;{[:space:]])exit[[:space:]]*(\}|$)' "$GEN" || true)
+
+  [ -z "$achado" ] || {
+    echo "saída antecipada dentro de um awk que lê de um cano:"
+    echo "$achado"
+    return 1
+  }
+}
