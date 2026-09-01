@@ -24,9 +24,9 @@ jobs:
       # 'actions' cobre os workflows deste repo. Shell e PowerShell não têm
       # suporte no CodeQL — quem cobre esses é o ShellCheck/PSScriptAnalyzer.
       - name: Inicializar CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: actions
 
       - name: Analisar
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
